@@ -1,0 +1,13 @@
+import(methods)
+
+#export(
+#  factorialANOVA
+#)
+
+#exportClasses(
+#	
+#)
+
+#exportMethods(
+#	summary
+#)

@@ -1,0 +1,5 @@
+setClass("SimDatMultivariate",
+  contains="SimDatSkeleton"
+)
+
+

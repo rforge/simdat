@@ -1,0 +1,12 @@
+Package: simdat-gui
+Version: 0.0-1
+Date: 2011-07-06
+Title: GUI for simdat data simulation package
+Author: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
+Maintainer: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
+Depends: R (>= 2.12.0), simdat-gui, RGtk2, RGtk2Extras
+Description: simdat offers a flexible (S4) framework to simulate realistic data 
+  from various designs and dsitributions. The resulting data sets can be used
+  for purposes of e.g. in statistics teaching.
+License: GPL (>=2)
+URL: http://simdat.r-forge.r-project.org/
