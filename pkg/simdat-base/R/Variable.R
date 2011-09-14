@@ -24,7 +24,9 @@ setClass("IntervalVariable",
   contains="numeric",
   representation(
     name="character",
-    digits="integer"
+    digits="integer",
+    min="numeric",
+    max="numeric"
   )
 )
 
@@ -45,7 +47,7 @@ setClass("RandomRatioVariable",
 )
 
 setClassUnion("Variable",c("NominalVariable","OrdinalVariable","IntervalVariable","RatioVariable"))
-
+setClassUnion("RandomVariable",c("RandomNominalVariable","RandomOrdinalVariable","RandomIntervalVariable","RandomRatioVariable"))
 
 setClass("VariableList",
   contains="list"
@@ -81,6 +83,12 @@ setMethod("isMetric","Variable",
   function(object,...) {
     return(is(object,"IntervalVariable") | is(object,"RatioVariable"))
   }
+)
+
+setMethod("isRandom","Variable",
+    function(object,...) {
+        return(is(object,"RandomVariable"))
+    }
 )
 
 setMethod("digits","Variable",

@@ -1,3 +1,4 @@
+# to be obsolete:
 setClass("SimDatSkeleton",
   representation(
     fixed="VariableList", # list with SimDatVariables
