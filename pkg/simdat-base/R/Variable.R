@@ -109,17 +109,17 @@ setMethod("names",signature("VariableList"),
   function(x) unlist(lapply(x,names))
 )
 
-setMethod("simulate",signature(object="Variable"),
-    function(object,nsim,seed,distribution,...) {
-        if(!is(distribution,"Distribution")) stop("distribution should be a Distribution object")
-        if(isMetric(object)) {
-            object@.Data <- simulate(distribution,nsim=length(object),seed,min=min(object),max=max(object),digits=digits(object),...)
-        } else {
-            object@.Data <- simulate(distribution,nsim=length(object),seed,...)
-        }
-        object
-    }
-)
+#setMethod("simulate",signature(object="Variable"),
+#    function(object,nsim,seed,distribution,...) {
+#        if(!is(distribution,"Distribution")) stop("distribution should be a Distribution object")
+#        if(isMetric(object)) {
+#            object@.Data <- simulate(distribution,nsim=length(object),seed,min=min(object),max=max(object),digits=digits(object),...)
+#        } else {
+#            object@.Data <- simulate(distribution,nsim=length(object),seed,...)
+#        }
+#        object
+#    }
+#)
 #setMethod("labels",signature("SimDatVariableList"),
 #  function(x) labels(x@scale)
 #)

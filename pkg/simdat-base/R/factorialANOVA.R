@@ -1,10 +1,10 @@
-factorialANOVA <- function(factor.names = c("A","B"),factor.levels=c(2,2),N=c(15,15,15,15),means=c(0,1,2,3),sds=c(2,2,2,2),DV=list(name="Y",min=-Inf,max=Inf,digits=8,distribution="NormalDistribution")) {
+factorialANOVA <- function(factor.names = c("A","B"),factor.levels=c(2,2),N=c(15,15,15,15),means=c(0,1,2,3),sds=c(2,2,2,2),DV=list(name="Y",min=-Inf,max=Inf,digits=8,family=NO())) {
 
     if(is.null(DV$name)) DV$name <- "Y"
     if(is.null(DV$min)) DV$min <- -Inf
     if(is.null(DV$max)) DV$max <- Inf
     if(is.null(DV$digits)) DV$digits=8
-    if(is.null(DV$distribution)) DV$distribution <- "NormalDistribution"
+    if(is.null(DV$family)) DV$family <- gamlss.dist::NO()
 
     matchArg <- function(x,nCells,name) {
       if(length(x) > nCells) {
@@ -49,33 +49,52 @@ factorialANOVA <- function(factor.names = c("A","B"),factor.levels=c(2,2),N=c(15
         digits=as.integer(DV$digits)
     )
     
-    designFormula <- as.formula(paste(DV$name,"~",paste(factor.names,collapse="*")))
-    
+    mFormula <- as.formula(paste(DV$name,"~",paste(factor.names,collapse="*")))
     dat <- as.data.frame(fixed)
     colnames(dat) <- names(fixed)
     dat[,DV$name] <- rep(means,N)
-    mod <- lm(designFormula,data=dat)
-    coeff <- coefficients(mod)
+    mmod <- lm(mFormula,data=dat)
+    mcoeff <- coefficients(mmod)
     
-    DVdistr <- new(DV$distribution)
-    mean(DVdistr) <- predict(mod)
-    sd(DVdistr) <- rep(sds,times=N)
+    if(length(unique(sds))!=1) {
+      sFormula <- as.formula(paste(DV$name,"~",paste(factor.names,collapse="*")))
+    } else {
+      mFormula <- as.formula(paste(DV$name,"~",1))
+    }
+    dat <- as.data.frame(fixed)
+    colnames(dat) <- names(fixed)
+    dat[,DV$name] <- DV$family$sigma.linkfun(rep(sds,N))
+    smod <- lm(sFormula,data=dat)
+    scoeff <- coefficients(smod)
+    sFormula[[2]] <- NULL
+    #DVdistr <- new(DV$distribution)
+    #mean(DVdistr) <- predict(mod)
+    #sd(DVdistr) <- rep(sds,times=N)
     
-    # now simulate the DV
-    DVs <- simulate(DVs,distribution=DVdistr)
+    # now make the DV model
     
-    skel <- new("SimDatUnivariateLM",
-      formula=designFormula,
-      coefficients=coeff,
-      fixed = fixed,
-      random = new("VariableList",list(DVs)),
-      distribution = new("DistributionList",list(DVdistr)),
-      distributionID = as.integer(1),
-      distributionGeneration = as.integer(1),
-      N=N
+    mod <- new("GamlssModel",
+      mu=new("ParMod",
+        formula=mFormula,
+        coeffients=mcoeff)
+      sigma=new("ParMod",
+        formula=sFormula,
+        coeffients=scoeff),
+      family=DV$family)
+      
+    mod <- simulate(mod,DV=DVs,data=dat)
+    
+    structure <- matrix(0,ncol=(length(IVs) + 1),nrow=(length(IVs) + 1))
+    structure[nrow(structure),-ncol(structure)] <- 1
+    
+    sdmod <- new("SimDatModel",
+      variables=c(IVS,DVs),
+      models=list(mod),
+      modelID=c(rep(0,length(IVs)),1),
+      structure=structure
     )
     
-    return(skel)
+    return(sdmod)
 
 }
 
