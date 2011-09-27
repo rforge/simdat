@@ -1,7 +1,9 @@
-#assistant_factorialANOVA <- function() {
+assistant_factorialANOVA <- function() {
 
   require(RGtk2)
 
+  if(!exists(".sdeANOVA")) .sdeANOVA <- new.env()
+  
   invalidateDesignData <- function() {
     #designData <- data.frame()
   }
@@ -454,4 +456,4 @@
   gSignalConnect(assistant, "prepare", on_assistant_prepare)
 
   assistant$showAll()
-#}
+}

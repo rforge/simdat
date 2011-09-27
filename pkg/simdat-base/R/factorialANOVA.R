@@ -1,98 +1,24 @@
-factorialANOVA <- function(factor.names = c("A","B"),factor.levels=c(2,2),N=c(15,15,15,15),means=c(0,1,2,3),sds=c(2,2,2,2),DV=list(name="Y",min=-Inf,max=Inf,digits=8,family=NO())) {
-
-    if(is.null(DV$name)) DV$name <- "Y"
-    if(is.null(DV$min)) DV$min <- -Inf
-    if(is.null(DV$max)) DV$max <- Inf
-    if(is.null(DV$digits)) DV$digits=8
-    if(is.null(DV$family)) DV$family <- gamlss.dist::NO()
-
-    matchArg <- function(x,nCells,name) {
-      if(length(x) > nCells) {
-        warning("design has ",nCells,"but ",name," has length ",length(x),". Will not use superfluous values.")
-        x <- x[1:nCells]
-      }
-      if(length(x) < nCells ) {
-        if(length(x) != 1) warning("design has ",nCells,"but ",name," has length ",length(x),". Will fill up values by repetition")
-        x <- rep(x,length=nCells)
-      }
-      return(x)
-    }
-    if(length(DV$name) != 1) stop("ANOVA can only have a single dependent variable")
-
-
-    nCells <- prod(factor.levels)    
-    N <- matchArg(N,nCells,"N")
-    means <- matchArg(means,nCells,"means")
-    sds <- matchArg(sds,nCells,"sds")
+factorialANOVA <- function(factor.names = c("A","B"),factor.levels=list(c("A1","A2"),c("B1","B2")),N=c(15,15,15,15),means=c(0,1,2,3),sds=c(2,2,2,2),DV=list(name="Y",min=-Inf,max=Inf,digits=8,family=NO())) {
     
+    if(!is.list(factor.levels)) {
+      if(is.numeric(factor.levels)) {
+        tmp <- list()
+        for(i in 1:length(factor.levels)) {
+          tmp[[i]] <- paste(factor.names[i],1:factor.levels[i],sep=".")
+        }
+      factor.names <- tmp
+      } else {
+        stop("factor.levels should be a list or vector with integers")
+      }
+    }
     tmp <- list()
     nIV <- length(factor.names)
-    for(i in 1:nIV) tmp[[i]] <- seq(1,factor.levels[i])
-    designMatrix <- expand.grid(tmp)
+    #for(i in 1:nIV) tmp[[i]] <- factor.levels[[i]]
+    designMatrix <- expand.grid(factor.levels)
     colnames(designMatrix) <- factor.names
-    designMatrix <- apply(designMatrix,2,rep,times=N)
+    #designMatrix <- as.data.frame(lapply(designMatrix,rep,times=N))
     
-    IVs <- list()
-    for(i in 1:nIV) {
-        IVs[[i]] <- new("NominalVariable",
-          factor(designMatrix[,i],labels=paste(factor.names[i],1:(factor.levels[i]),sep="")),
-          name = factor.names[i]
-        )
-    }
-    fixed <- new("VariableList",IVs)
-    
-    DVs <- new("RandomIntervalVariable",
-        rep(NA,sum(N)),
-        name = DV$name,
-        min=DV$min,
-        max=DV$max,
-        digits=as.integer(DV$digits)
-    )
-    
-    mFormula <- as.formula(paste(DV$name,"~",paste(factor.names,collapse="*")))
-    dat <- as.data.frame(fixed)
-    colnames(dat) <- names(fixed)
-    dat[,DV$name] <- rep(means,N)
-    mmod <- lm(mFormula,data=dat)
-    mcoeff <- coefficients(mmod)
-    
-    if(length(unique(sds))!=1) {
-      sFormula <- as.formula(paste(DV$name,"~",paste(factor.names,collapse="*")))
-    } else {
-      mFormula <- as.formula(paste(DV$name,"~",1))
-    }
-    dat <- as.data.frame(fixed)
-    colnames(dat) <- names(fixed)
-    dat[,DV$name] <- DV$family$sigma.linkfun(rep(sds,N))
-    smod <- lm(sFormula,data=dat)
-    scoeff <- coefficients(smod)
-    sFormula[[2]] <- NULL
-    #DVdistr <- new(DV$distribution)
-    #mean(DVdistr) <- predict(mod)
-    #sd(DVdistr) <- rep(sds,times=N)
-    
-    # now make the DV model
-    
-    mod <- new("GamlssModel",
-      mu=new("ParMod",
-        formula=mFormula,
-        coeffients=mcoeff)
-      sigma=new("ParMod",
-        formula=sFormula,
-        coeffients=scoeff),
-      family=DV$family)
-      
-    mod <- simulate(mod,DV=DVs,data=dat)
-    
-    structure <- matrix(0,ncol=(length(IVs) + 1),nrow=(length(IVs) + 1))
-    structure[nrow(structure),-ncol(structure)] <- 1
-    
-    sdmod <- new("SimDatModel",
-      variables=c(IVS,DVs),
-      models=list(mod),
-      modelID=c(rep(0,length(IVs)),1),
-      structure=structure
-    )
+    sdmod <- ANOVA(design=designMatrix,N=N,means=means,sds=sds,DV=DV)
     
     return(sdmod)
 

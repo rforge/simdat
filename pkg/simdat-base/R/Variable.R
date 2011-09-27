@@ -53,6 +53,15 @@ setClass("VariableList",
   contains="list"
 )
 
+VariableList <- function(list) {
+  if(!is.list(list)) stop("argument is not a list")
+  else {
+    out <- new("VariableList",
+      .Data <- list)
+  }
+  out
+}
+
 setValidity("VariableList",
   method=function(object) {
     all(lapply(object,function(x) is(x,"Variable"))==TRUE)
@@ -123,3 +132,12 @@ setMethod("names",signature("VariableList"),
 #setMethod("labels",signature("SimDatVariableList"),
 #  function(x) labels(x@scale)
 #)
+
+setMethod("simulate",signature(object="Variable"),
+  function(object,nsim=1,seed,model,...) {
+    call <- match.call()
+    args <- as.list(call[2:length(call)])
+    if(!missing(model)) object <- do.call("simulateFromModel",args)
+    object
+  }
+)

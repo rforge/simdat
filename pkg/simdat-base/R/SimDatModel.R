@@ -1,5 +1,6 @@
 setClass("SimDatModel",
     representation(
+        name="character",
         variables="VariableList",
         models="ModelList",
         modelID="numeric", # vector with model indicators (0 is for fixed variables)
@@ -11,13 +12,14 @@ setValidity("SimDatModel",
   method=function(object) {
     nvar <- length(object@variables)
     if(ncol(object@structure)!=nvar | nrow(object@structure) != nvar) return(FALSE)
-    if(length(object@models)!=length(unique(object@modelID))) return(FALSE)
-    if(!all(structure %in% c(0,1))) return(FALSE)
-    if(!isDAG(structure)) return(FALSE)
+    if(length(object@models)!=length(unique(object@modelID[object@modelID > 0]))) return(FALSE)
+    if(!all(object@structure %in% c(0,1))) return(FALSE)
+    if(!isDAG(object@structure)) return(FALSE)
     # add more checks here
     # needs check that multivariate models have no interdependencies in graph!
   }
 )
+
 
 setMethod("simulate",signature(object="SimDatModel"),
     function(object,nsim=1,seed,...) {
@@ -38,7 +40,7 @@ setMethod("simulate",signature(object="SimDatModel"),
             out <- list()
             for(i in 1:nsim) {
                 mod <- simulate(object,nsim=1,seed=seed,...)
-                out[[i]] <- as.data.frame(mod@variables)
+                out[[i]] <- getData(mod,...)
             }
             return(out)
         } else {
@@ -48,9 +50,9 @@ setMethod("simulate",signature(object="SimDatModel"),
                  IV <- which(rowSums(object@structure[,vars]) > 0)
                  if(length(IV) > 0) {
                     dat <- as.data.frame(object@variables)[,IV]
-                    out <- simulate(models[[mod]],nsim=nsim,seed=seed,DV=DV,data=dat,...)
+                    out <- simulateFromModel(DV,model=models[[mod]],nsim=nsim,seed=seed,data=dat,...)
                  } else {
-                    out <- simulate(models[[mod]],nsim=nsim,seed=seed,DV=DV,...)
+                    out <- simulateFromModel(DV,model=models[[mod]],nsim=nsim,seed=seed,...)
                  }
                  
                  # now set the data in dat to the correct variables
@@ -77,35 +79,11 @@ setMethod("simulate",signature(object="SimDatModel"),
     }
 )
 
-
-topOrderGraph <- function(graph) {
-# L ← Empty list where we put the sorted elements
-# Q ← Set of all nodes with no incoming edges
-# while Q is non-empty do
-#     remove a node n from Q
-#     insert n into L
-#     for each node m with an edge e from n to m do
-#         remove edge e from the graph
-#         if m has no other incoming edges then
-#             insert m into Q
-# if graph has edges then
-#     output error message (graph has a cycle)
-# else 
-#     output message (proposed topologically sorted order: L) 
-    l <- vector()
-    q <- which(colSums(graph) == 0)
-    while(length(q) > 0) {
-        b <- q[1]
-        l <- c(l,b)
-        q <- q[-1]
-        for(node in which(graph[b,] == 1)) {
-            graph[b,node] <- 0
-            if(sum(graph[,node]) == 0) q <- c(q,node)
-        }
+setMethod("getData","SimDatModel",
+    function(object,...) {
+        dat <- as.data.frame(object@variables)
+        colnames(dat) <- names(object@variables)
+        dat
     }
-    if(!all(colSums(graph) == 0)) return(NULL) else return(l)
-}
-
-isDAG <- function(graph) {
-    !is.null(topOrderGraph(graph))
-}
+    
+)

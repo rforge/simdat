@@ -1,9 +1,14 @@
 require(RGtk2)
 require(RGtk2Extras)
 
+if(!exists(".sde")) .sde <- new.env()
+
+.sde$CURRENT_MODEL <- factorialANOVA()
+#.sde$MODELS <- list()
+
 # appWindow demo from GTK
 
-window <- NULL
+simdat_window <- NULL
 
 # define some callbacks
 
@@ -13,7 +18,7 @@ activate.radio.action <- function(action, current)
     typename <- class(action)[1]
     value <- current$getCurrentValue()
     if (current$getActive()) {
-        dialog <- gtkMessageDialogNew(window, "destroy-with-parent", "info", "close",
+        dialog <- gtkMessageDialogNew(simdatGUI, "destroy-with-parent", "info", "close",
                        "You activated radio action:", name, "of type ", typename,
                        "\nCurrent value: ", value)
         gSignalConnect(dialog, "response", gtkWidgetDestroy)
@@ -25,7 +30,7 @@ activate.action <- function(action, w)
 {
     name <- action$getName()
     typename <- class(action)[1] # parent, dialog mode, message type, buttons, message
-    dialog <- gtkMessageDialogNew(window, "destroy-with-parent", "info", "close",
+    dialog <- gtkMessageDialogNew(simdatGUI, "destroy-with-parent", "info", "close",
         "You activated action:", name, "of type", typename)
     gSignalConnect(dialog, "response", gtkWidgetDestroy)
 }
@@ -148,18 +153,18 @@ entries <- list(
 )
 
 # create a window
-window <- gtkWindowNew("toplevel")
-window$setDefaultSize(800, 600)
-window$setTitle("SIMDAT")
+simdat_window <- gtkWindowNew("toplevel")
+simdat_window$setDefaultSize(800, 600)
+simdat_window$setTitle("SIMDAT")
 
 # add a table layout
 table <- gtkTableNew(1, 4, FALSE)
-window$add(table)
+simdat_window$add(table)
 
 agroup <- gtkActionGroupNew("AppWindowActions")
 
 # add actions to group with the window widget passed to callbacks
-agroup$addActions(entries, window)
+agroup$addActions(entries, simdat_window)
 #agroup$addToggleActions(toggle.entries)
 #agroup$addRadioActions(color.entries, 0, activate.radio.action)
 #agroup$addRadioActions(shape.entries, 0, activate.radio.action)
@@ -167,10 +172,10 @@ agroup$addActions(entries, window)
 # create a UI manager to read in menus specified in XML
 manager <- gtkUIManagerNew()
 
-window$setData("ui-manager", manager)
+simdat_window$setData("ui-manager", manager)
 manager$insertActionGroup(agroup, 0)
 
-window$addAccelGroup(manager$getAccelGroup())
+simdat_window$addAccelGroup(manager$getAccelGroup())
 
 # Define some XML
 uistr <- paste(
@@ -222,19 +227,6 @@ table$attach(menubar, 0, 1, 0, 1, c("expand", "fill"), 0, 0, 0)
 notebook <- gtkNotebook()
 table$attach(notebook, 0, 1, 2, 3, c("expand", "fill"), c("expand", "fill"), 0, 0)
 
-### Variables notebook ###
-notebook_page_variables <- gtkVBox()
-notebook_page_variables_buttonBox <- gtkHBox()
-add_variable <- gtkButton("Add variable") # should bring up wizard
-delete_variable <- gtkButton("Delete variable")
-notebook_page_variables_buttonBox$add(add_variable)
-notebook_page_variables_buttonBox$add(delete_variable)
-
-notebook_page_variables$add(notebook_page_variables_buttonBox)
-
-notebook_page_variables_label <- gtkLabel("Variables")
-notebook$appendPage(notebook_page_variables,notebook_page_variables_label)
-
 ### Data notebook ###
 notebook_page_data <- gtkVBox()
 notebook_page_data_buttonBox <- gtkHBox()
@@ -244,9 +236,9 @@ confirm_changes_data <- gtkButton("Confirm changes")
 notebook_page_data_buttonBox$add(simulate_data)
 notebook_page_data_buttonBox$add(summary_data)
 notebook_page_data$add(notebook_page_data_buttonBox)
-notebook_page_data_swindow <- gtkDfEdit(iris)
+notebook_page_data_swindow <- gtkDfEdit(getData(.sde$CURRENT_MODEL))
 #notebook_page_data_swindow <- gtkScrolledWindow()
-notebook_page_data_dataframe <- rGtkDataFrame(iris)
+notebook_page_data_dataframe <- rGtkDataFrame()
 notebook_page_data_dataview <- gtkTreeView(notebook_page_data_dataframe)
 notebook_page_data_dataview$getSelection()$setMode("browse")
 for(i in 1:ncol(iris)) {
@@ -259,6 +251,27 @@ notebook_page_data$add(confirm_changes_data)
 notebook_page_data_label <- gtkLabel("Data")
 notebook$appendPage(notebook_page_data,notebook_page_data_label)
 
+### Variables notebook ###
+notebook_page_variables <- gtkVBox()
+notebook_page_variables_buttonBox <- gtkHBox()
+add_variable <- gtkButton("Add variable") # should bring up wizard
+delete_variable <- gtkButton("Delete variable")
+notebook_page_variables_buttonBox$add(add_variable)
+notebook_page_variables_buttonBox$add(delete_variable)
+notebook_page_variables$add(notebook_page_variables_buttonBox)
+notebook_page_variables_label <- gtkLabel("Variables")
+notebook$appendPage(notebook_page_variables,notebook_page_variables_label)
+
+### Models notebook ###
+notebook_page_models <- gtkVBox()
+notebook_page_models_buttonBox <- gtkHBox()
+add_model <- gtkButton("Add model") # should bring up wizard
+delete_model <- gtkButton("Delete model")
+notebook_page_models_buttonBox$add(add_model)
+notebook_page_models_buttonBox$add(delete_model)
+notebook_page_models$add(notebook_page_models_buttonBox)
+notebook_page_models_label <- gtkLabel("Models")
+notebook$appendPage(notebook_page_models,notebook_page_models_label)
 
 #scrolled.window <- gtkScrolledWindowNew()
 #scrolled.window$setPolicy("automatic", "automatic")

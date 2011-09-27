@@ -1,5 +1,7 @@
 setGeneric("isMetric",function(object,...) standardGeneric("isMetric"))
 setGeneric("isRandom",function(object,...) standardGeneric("isRandom"))
+setGeneric("simulateFromModel",function(object,model,nsim=1,seed,...) standardGeneric("simulateFromModel"))
+#setGeneric("simulate",function(object,nsim=1,seed,...) standardGeneric("simulate"))
 #setGeneric("N",function(object,...) standardGeneric("N"))
 #setGeneric("N<-",function(object,value,...) standardGeneric("N<-"))
 #setGeneric("mean",function(object,...) standardGeneric("mean"))
