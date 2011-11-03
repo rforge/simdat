@@ -15,3 +15,12 @@ setGeneric("simulateFromModel",function(object,model,nsim=1,seed,...) standardGe
 setGeneric("digits",function(object,...) standardGeneric("digits"))
 #setGeneric("scale",function(object,...) standardGeneric("scale"))
 setGeneric("getData",function(object,...) standardGeneric("getData"))
+setGeneric("variableNames",function(object,...) standardGeneric("variableNames"))
+setGeneric("variableNames<-",function(object,value,...) standardGeneric("variableNames<-"))
+
+setGeneric("as.Random",function(object,...) standardGeneric("as.Random"))
+setGeneric("as.Fixed",function(object,...) standardGeneric("as.Fixed"))
+setGeneric("as.Nominal",function(object,...) standardGeneric("as.Nominal"))
+setGeneric("as.Ordinal",function(object,...) standardGeneric("as.Ordinal"))
+setGeneric("as.Interval",function(object,...) standardGeneric("as.Interval"))
+setGeneric("as.Ratio",function(object,...) standardGeneric("as.Ratio"))

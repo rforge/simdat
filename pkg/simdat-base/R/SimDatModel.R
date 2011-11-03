@@ -84,6 +84,21 @@ setMethod("getData","SimDatModel",
         dat <- as.data.frame(object@variables)
         colnames(dat) <- names(object@variables)
         dat
+    } 
+)
+
+setMethod("variableNames","SimDatModel",
+    function(object,...) {
+        names(object@variables)
     }
-    
+)
+
+setReplaceMethod("variableNames","SimDatModel",
+    function(object,value,...) {
+        if(length(value) != length(object@variables)) {
+            stop("need correct length to replace names")
+        } else {
+            names(object@variables) <- value
+        }
+    }
 )

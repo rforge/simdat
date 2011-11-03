@@ -25,8 +25,8 @@ setClass("IntervalVariable",
   representation(
     name="character",
     digits="integer",
-    min="numeric",
-    max="numeric"
+    #min="numeric",
+    #max="numeric"
   )
 )
 
@@ -48,6 +48,23 @@ setClass("RandomRatioVariable",
 
 setClassUnion("Variable",c("NominalVariable","OrdinalVariable","IntervalVariable","RatioVariable"))
 setClassUnion("RandomVariable",c("RandomNominalVariable","RandomOrdinalVariable","RandomIntervalVariable","RandomRatioVariable"))
+
+setMethod("as.Random","Variable",
+    function(object,...) {
+        
+    }
+)
+
+setMethod("as.Fixed","Variable",
+    function(object,...) {
+        if(is(object,"RandomNominalVariable")) {
+            
+        }
+        if(is(object,"RandomOrdinalVariable")) {
+            
+        }
+    }
+)
 
 setClass("VariableList",
   contains="list"
@@ -110,12 +127,27 @@ setMethod("names",signature("Variable"),
   function(x) x@name
 )
 
-setMethod("labels",signature("Variable"),
+setReplaceMethod("names",signature("Variable"),
+  function(x,value) x@name <- value
+)
+
+setMethod("labels","Variable",
   function(object) if(is(object,"IntervalVariable") | is(object,"RatioVariable")) NULL else labels(object)
 )
 
 setMethod("names",signature("VariableList"),
   function(x) unlist(lapply(x,names))
+)
+
+setReplaceMethod("names","VariableList",
+  function(x,value) {
+    if(length(value) != length(x)) {
+        stop("need the correct length to replace names")
+    } else {
+        for(i in 1:length(x)) {
+            names(x) <- value[i]
+        }
+    }
 )
 
 #setMethod("simulate",signature(object="Variable"),
