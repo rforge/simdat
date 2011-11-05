@@ -24,7 +24,7 @@ setClass("IntervalVariable",
   contains="numeric",
   representation(
     name="character",
-    digits="integer",
+    digits="integer"#,
     #min="numeric",
     #max="numeric"
   )
@@ -49,22 +49,131 @@ setClass("RandomRatioVariable",
 setClassUnion("Variable",c("NominalVariable","OrdinalVariable","IntervalVariable","RatioVariable"))
 setClassUnion("RandomVariable",c("RandomNominalVariable","RandomOrdinalVariable","RandomIntervalVariable","RandomRatioVariable"))
 
-setMethod("as.Random","Variable",
+setMethod("asRandom","Variable",
     function(object,...) {
-        
+        if(is(object,"FixedVariable")) {
+            if(is(object,"NominalVariable")) object <- as(object,"RandomNominalVariable")
+            if(is(object,"OrdinalVariable")) object <- as(object,"RandomOrdinalVariable")
+            if(is(object,"IntervalVariable")) object <- as(object,"RandomIntervalVariable")
+            if(is(object,"RatioVariable")) object <- as(object,"RandomRatioVariable")
+        } 
     }
 )
 
-setMethod("as.Fixed","Variable",
+setMethod("asFixed","Variable",
     function(object,...) {
-        if(is(object,"RandomNominalVariable")) {
-            
-        }
-        if(is(object,"RandomOrdinalVariable")) {
-            
+        if(is(object,"RandomVariable")) {
+            if(is(object,"RandomNominalVariable")) object <- as(object,"NominalVariable")
+            if(is(object,"RandomOrdinalVariable")) object <- as(object,"OrdinalVariable")
+            if(is(object,"RandomIntervalVariable")) object <- as(object,"IntervalVariable")
+            if(is(object,"RandomRatioVariable")) object <- as(object,"RatioVariable")
         }
     }
 )
+
+setAs("NominalVariable","OrdinalVariable",
+  function(from) {
+      new("OrdinalVariable",
+        ordered(from@.Data,labels=levels(from)),
+        name = names(from))
+  }
+)
+
+setAs("NominalVariable","IntervalVariable",
+  function(from) {
+      new("IntervalVariable",
+        as.numeric(from),
+        name = names(from),
+        digits=getOption("digits"))
+  }
+)
+
+setAs("NominalVariable","RatioVariable",
+  function(from) {
+      new("RatioVariable",
+        as.numeric(from),
+        name = names(from),
+        digits=getOption("digits"))
+  }
+)
+
+setAs("OrdinalVariable","NominalVariable",
+  function(from) {
+      new("NominalVariable",
+        factor(from@.Data,labels=levels(from)),
+        name = names(from))
+  }
+)
+
+setAs("OrdinalVariable","IntervalVariable",
+  function(from) {
+      new("IntervalVariable",
+        as.numeric(from),
+        name = names(from),
+        getOption("digits"))
+  }
+)
+
+setAs("OrdinalVariable","RatioVariable",
+  function(from) {
+      new("RatioVariable",
+        as.numeric(from),
+        name = names(from),
+        getOption("digits"))
+  }
+)
+
+setAs("IntervalVariable","NominalVariable",
+  function(from) {
+      new("NominalVariable",
+        factor(from@.Data),
+        name = names(from))
+  }
+)
+
+setAs("IntervalVariable","OrdinalVariable",
+  function(from) {
+      new("OrdinalVariable",
+        ordered(from),
+        name = names(from))
+  }
+)
+
+setAs("IntervalVariable","RatioVariable",
+  function(from) {
+      new("RatioVariable",
+        from@.Data,
+        name = names(from),
+        digits=digits(from))
+  }
+)
+
+setAs("RatioVariable","NominalVariable",
+  function(from) {
+      new("NominalVariable",
+        factor(from@.Data),
+        name = names(from))
+  }
+)
+
+setAs("RatioVariable","OrdinalVariable",
+  function(from) {
+      new("OrdinalVariable",
+        ordered(from),
+        name = names(from))
+  }
+)
+
+setAs("RatioVariable","IntervalVariable",
+  function(from) {
+      new("IntervalVariable",
+        from@.Data,
+        name = names(from),
+        digits=digits(from))
+  }
+)
+
+##TODO: setAs("RandomNominalVariable","NominalVariable",
 
 setClass("VariableList",
   contains="list"
@@ -128,26 +237,47 @@ setMethod("names",signature("Variable"),
 )
 
 setReplaceMethod("names",signature("Variable"),
-  function(x,value) x@name <- value
+  function(x,value) {
+    if(is.character(value)) {
+      x@name <- value
+    } else {
+      x@name <- as.character(value)
+    }
+    return(x)
+  }
 )
 
 setMethod("labels","Variable",
   function(object) if(is(object,"IntervalVariable") | is(object,"RatioVariable")) NULL else labels(object)
 )
 
+setMethod("isMetric","VariableList",
+  function(object,...) unlist(lapply(x,isMetric,...))
+)
+
+setMethod("isRandom","VariableList",
+    function(object,...) unlist(lapply(x,isRandom,...))
+)
+
+
 setMethod("names",signature("VariableList"),
   function(x) unlist(lapply(x,names))
 )
+
+
 
 setReplaceMethod("names","VariableList",
   function(x,value) {
     if(length(value) != length(x)) {
         stop("need the correct length to replace names")
     } else {
+        #names(x) <- value
         for(i in 1:length(x)) {
-            names(x) <- value[i]
+            names(x[[i]]) <- value[i]
         }
     }
+    return(x)
+  }
 )
 
 #setMethod("simulate",signature(object="Variable"),
@@ -170,6 +300,40 @@ setMethod("simulate",signature(object="Variable"),
     call <- match.call()
     args <- as.list(call[2:length(call)])
     if(!missing(model)) object <- do.call("simulateFromModel",args)
+    object
+  }
+)
+
+setReplaceMethod("digits","IntervalVariable",
+  function(object,value,...) {
+    if(is.numeric(value) & value >= 0) {
+      if(!is.integer(value)) value <- as.integer(value)
+      object@digits <- value
+    } else {
+      stop("cannot set digits; need a numeric value greater than 0")
+    }
+    object
+  }
+)
+
+setReplaceMethod("min","RandomIntervalVariable",
+  function(object,value,...) {
+    if(is.numeric(value)) {
+      object@min <- value
+    } else {
+      stop("cannot set minimum; need a numeric value")
+    }
+    object
+  }
+)
+
+setReplaceMethod("max","RandomIntervalVariable",
+  function(object,value,...) {
+    if(is.numeric(value)) {
+      object@max <- value
+    } else {
+      stop("cannot set maximum; need a numeric value")
+    }
     object
   }
 )
