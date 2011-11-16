@@ -8,7 +8,7 @@ setClass("NominalVariable",
 setClass("RandomNominalVariable",
     contains="NominalVariable"
 )
-
+as
 setClass("OrdinalVariable",
   contains="ordered",
   representation(
@@ -51,12 +51,13 @@ setClassUnion("RandomVariable",c("RandomNominalVariable","RandomOrdinalVariable"
 
 setMethod("asRandom","Variable",
     function(object,...) {
-        if(is(object,"FixedVariable")) {
+        if(!is(object,"RandomVariable")) {
             if(is(object,"NominalVariable")) object <- as(object,"RandomNominalVariable")
             if(is(object,"OrdinalVariable")) object <- as(object,"RandomOrdinalVariable")
             if(is(object,"IntervalVariable")) object <- as(object,"RandomIntervalVariable")
             if(is(object,"RatioVariable")) object <- as(object,"RandomRatioVariable")
         } 
+        return(object)
     }
 )
 
@@ -68,7 +69,17 @@ setMethod("asFixed","Variable",
             if(is(object,"RandomIntervalVariable")) object <- as(object,"IntervalVariable")
             if(is(object,"RandomRatioVariable")) object <- as(object,"RatioVariable")
         }
+        return(object)
     }
+)
+
+setAs("NominalVariable","RandomNominalVariable",
+  function(from) {
+      new("RandomNominalVariable",
+        .Data = from@.Data,
+        levels = from@levels,
+        name = names(from))
+  }
 )
 
 setAs("NominalVariable","OrdinalVariable",
@@ -94,6 +105,15 @@ setAs("NominalVariable","RatioVariable",
         as.numeric(from),
         name = names(from),
         digits=getOption("digits"))
+  }
+)
+
+setAs("OrdinalVariable","RandomOrdinalVariable",
+  function(from) {
+      new("RandomOrdinalVariable",
+        .Data = from@.Data,
+        levels = from@levels,
+        name = names(from))
   }
 )
 
@@ -123,6 +143,17 @@ setAs("OrdinalVariable","RatioVariable",
   }
 )
 
+setAs("IntervalVariable","RandomIntervalVariable",
+  function(from) {
+      new("RandomIntervalVariable",
+        from@.Data,
+        name = names(from),
+        digits=digits(from),
+        min=-Inf,
+        max=Inf)
+  }
+)
+
 setAs("IntervalVariable","NominalVariable",
   function(from) {
       new("NominalVariable",
@@ -145,6 +176,17 @@ setAs("IntervalVariable","RatioVariable",
         from@.Data,
         name = names(from),
         digits=digits(from))
+  }
+)
+
+setAs("RatioVariable","RandomRatioVariable",
+  function(from) {
+      new("RandomRatioVariable",
+        from@.Data,
+        name = names(from),
+        digits=digits(from),
+        min=-Inf,
+        max=Inf)
   }
 )
 

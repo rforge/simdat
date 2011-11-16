@@ -28,6 +28,9 @@ setGeneric("digits<-",function(object,value,...) standardGeneric("digits<-"))
 setGeneric("models",function(object,...) standardGeneric("models",...))
 setGeneric("models<-",function(object,value,...) standardGeneric("models<-",...))
 
+setGeneric("variables",function(object,...) standardGeneric("variables",...))
+setGeneric("variables<-",function(object,value,...) standardGeneric("variables<-",...))
+
 #setGeneric("asNominal",function(object,...) standardGeneric("as.Nominal"))
 #setGeneric("as.Ordinal",function(object,...) standardGeneric("as.Ordinal"))
 #setGeneric("as.Interval",function(object,...) standardGeneric("as.Interval"))

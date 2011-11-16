@@ -117,6 +117,23 @@ setReplaceMethod("models","SimDatModel",
     } else {
       object@models <- value
     }
+    return(object)
   }
 )
 
+setMethod("variables","SimDatModel",
+  function(object,...) {
+    object@variables
+  }
+)
+
+setReplaceMethod("variables","SimDatModel",
+  function(object,value,...) {
+    if(!is(value,"VariableList")) {
+      stop("cannot replace variables; need a VariableList")
+    } else {
+      object@variables <- value
+    }
+    return(object)
+  }
+)
