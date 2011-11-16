@@ -294,11 +294,11 @@ setMethod("labels","Variable",
 )
 
 setMethod("isMetric","VariableList",
-  function(object,...) unlist(lapply(x,isMetric,...))
+  function(object,...) unlist(lapply(object,isMetric,...))
 )
 
 setMethod("isRandom","VariableList",
-    function(object,...) unlist(lapply(x,isRandom,...))
+    function(object,...) unlist(lapply(object,isRandom,...))
 )
 
 

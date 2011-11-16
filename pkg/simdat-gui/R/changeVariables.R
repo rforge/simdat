@@ -3,8 +3,27 @@ setMethod("addVariable","SimDatModel",
     name <- deparse(substitute(object))
     if(!is(variable,"simdat-base::Variable")) stop("variable not valid")
     if(!is.null(idx) & idx > 0) {
+      object@modelID <- append(object@modelID,0,after=idx-1)
+      if(idx==1) {
+       tstruc <- cbind(0,object@structure)
+       tstruc <- rbind(0,tstruc)
+       object@structure <- tstruc
+      } else if(idx > ncol(object@structure)) {
+        tstruc <- cbind(object@structure,0)
+        tstruc <- rbind(tstruc,0)
+        object@structure <- tstruc
+      } else {
+        tstruc <- cbind(object@structure[,1:(idx-1)],0,object@structure[,idx:ncol(object@structure)])
+        tstruc <- rbind(tstruc[1:(idx-1),],0,tstruc[idx:nrow(tstruc),])
+        object@structure <- tstruc
+      }
       variables(object) <- VariableList(append(variables(object),variable,after=idx-1))
     } else {
+      # append at the end
+      object@modelID <- append(object@modelID,0)
+      tstruc <- cbind(object@structure,0)
+      tstruc <- rbind(tstruc,0)
+      object@structure <- tstruc
       variables(object) <- VariableList(append(variables(object),variable))
     }
   assign(name,object,envir=env,...)
@@ -16,6 +35,9 @@ setMethod("deleteVariable","SimDatModel",
   function(object,idx,env=parent.env(),...) {
     name <- deparse(substitute(object))
     if(idx > 0 & idx <= length(variables(object))) {
+      if(object@modelID[idx] != 0) warning("deleting a variable with an assigned model; will delete model too")
+      if(sum(object@structure[,idx]) != 0) warning("deleting a variable which occurs in model(s); will delete model(s) too")
+      object@modelID <- object@modelID[-idx]
       variables(object) <- variables(object)[-idx]
       assign(name,object,envir=env,...)
     } else {
