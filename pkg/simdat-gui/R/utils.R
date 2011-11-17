@@ -13,17 +13,17 @@
     if(!is(sdModel,"SimDatModel")) stop("argument is not a SimDatModel")
     nList <- list()
     # check number of random variables
-    vars <- variables(object,...)
+    vars <- variables(sdModel,...)
     if(length(vars)>0) {
-        modelIDs <- object@modelID[isRandom(vars)]
+        modelIDs <- sdModel@modelID[isRandom(vars)]
         if(!is.null(modelIDs)) {
             tmp <- unique(modelIDs)
             tmp <- tmp[tmp != 0]
             tmp <- tmp[order(tmp)]
             for(id in tmp) {
-                nList[paste(id)] <- c(nList,list(names(vars)[object@modelID == id]))
+                nList[paste(id)] <- c(nList,list(names(vars)[sdModel@modelID == id]))
             }
-            tmp <- which((object@modelID == 0) & isRandom(vars))
+            tmp <- which((sdModel@modelID == 0) & isRandom(vars))
             if(length(tmp)>0) {
                 for(id in tmp) nList <- c(nList,list(variableNames(vars)[id]))
             }

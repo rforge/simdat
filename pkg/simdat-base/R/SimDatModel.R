@@ -87,22 +87,6 @@ setMethod("getData","SimDatModel",
     } 
 )
 
-setMethod("variableNames","SimDatModel",
-    function(object,...) {
-        names(object@variables)
-    }
-)
-
-setReplaceMethod("variableNames","SimDatModel",
-    function(object,value,...) {
-        if(length(value) != length(object@variables)) {
-            stop("need correct length to replace names")
-        } else {
-            names(object@variables) <- value
-        }
-        return(object)
-    }
-)
 
 setMethod("models","SimDatModel",
   function(object,...) {
@@ -136,4 +120,22 @@ setReplaceMethod("variables","SimDatModel",
     }
     return(object)
   }
+)
+
+
+setMethod("variableNames","SimDatModel",
+    function(object,...) {
+        names(variables(object,...))
+    }
+)
+
+setReplaceMethod("variableNames","SimDatModel",
+    function(object,value,...) {
+        if(length(value) != length(variables(object,...))) {
+            stop("need correct length to replace names")
+        } else {
+            names(variables(object,...)) <- value
+        }
+        return(object)
+    }
 )
