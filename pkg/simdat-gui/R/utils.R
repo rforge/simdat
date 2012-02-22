@@ -31,3 +31,19 @@
     }
     return(nList)
 }
+
+.SimDatDistributions <- function() {
+  dist <- list(
+    "normal" = list(name="NO",parameters=c("mu","sigma")),
+    "normal family" = list(name="NOF",parameters=c("mu","sigma","nu"))
+  )
+  return(dist)
+}
+
+.SimDatDistributionNames <- function() {
+  names(.SimDatDistributions())
+}
+
+.SimDatGetDistributionFromName <- function(name) {
+  do.call(eval(.SimDatDistributions()[[name]]$name),args=list())
+} 

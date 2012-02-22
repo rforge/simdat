@@ -380,5 +380,3 @@ setValidity("ModelList",
     all(lapply(object,function(x) is(x,"Model"))==TRUE)
   }
 )
-
-
