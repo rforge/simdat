@@ -52,8 +52,10 @@ setMethod("simulate",signature(object="SimDatModel"),
                  if(length(IV) > 0) {
                     #dat <- as.data.frame(object@variables)[,IV]
                     #colnames(dat) <- names(object@variables)[IV]
-                    dat <- as.data.frame(object@variables)
-                    colnames(dat) <- names(object@variables)
+                    #dat <- as.data.frame(object@variables)
+                    #colnames(dat) <- names(object@variables)
+                    dat <- getData(object,...)
+                    #colnames(dat) <- names(object@variables)
                     #TODO: need a method to transform into an S3 dataframe
                     out <- simulateFromModel(DV,model=object@models[[mod]],nsim=nsim,seed=seed,data=dat,...)
                  } else {
