@@ -8,7 +8,9 @@ setClass("NominalVariable",
 setClass("RandomNominalVariable",
     contains="NominalVariable"
 )
-as
+
+#as
+
 setClass("OrdinalVariable",
   contains="ordered",
   representation(
@@ -306,8 +308,6 @@ setMethod("names",signature("VariableList"),
   function(x) unlist(lapply(x,names))
 )
 
-
-
 setReplaceMethod("names","VariableList",
   function(x,value) {
     if(length(value) != length(x)) {
@@ -321,6 +321,8 @@ setReplaceMethod("names","VariableList",
     return(x)
   }
 )
+
+
 
 #setMethod("simulate",signature(object="Variable"),
 #    function(object,nsim,seed,distribution,...) {

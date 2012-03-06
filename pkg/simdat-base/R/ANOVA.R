@@ -85,7 +85,7 @@ ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=f
     DVs <- simulateFromModel(DVs,model=mod,data=dat)
     
     structure <- matrix(0,ncol=(length(IVs) + 1),nrow=(length(IVs) + 1))
-    structure[nrow(structure),-ncol(structure)] <- 1
+    structure[-nrow(structure),ncol(structure)] <- 1
     
     sdmod <- new("SimDatModel",
       variables=VariableList(c(IVs,list(DVs))),

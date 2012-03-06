@@ -28,7 +28,8 @@ setMethod("simulate",signature(object="SimDatModel"),
         #nrep <- table(object@modelID)
         #multivar <- as.numeric(names(nrep[nrep>1]))
         
-        #morder <- unique(object@modelID[vorder])
+        morder <- unique(object@modelID[vorder])
+        morder <- morder[morder>0]
         
         #random <- (1:length(variables))[unlist(lapply(object@variables,isRandom))]
         #nrep <- table(object@modelID)
@@ -47,12 +48,16 @@ setMethod("simulate",signature(object="SimDatModel"),
             for(mod in morder) {
                  vars <- which(object@modelID == mod)
                  if(length(vars) > 1) DV <- object@variables[vars] else DV <- object@variables[[vars]]
-                 IV <- which(rowSums(object@structure[,vars]) > 0)
+                 IV <- which(rowSums(as.matrix(object@structure[,vars])) > 0)
                  if(length(IV) > 0) {
-                    dat <- as.data.frame(object@variables)[,IV]
-                    out <- simulateFromModel(DV,model=models[[mod]],nsim=nsim,seed=seed,data=dat,...)
+                    #dat <- as.data.frame(object@variables)[,IV]
+                    #colnames(dat) <- names(object@variables)[IV]
+                    dat <- as.data.frame(object@variables)
+                    colnames(dat) <- names(object@variables)
+                    #TODO: need a method to transform into an S3 dataframe
+                    out <- simulateFromModel(DV,model=object@models[[mod]],nsim=nsim,seed=seed,data=dat,...)
                  } else {
-                    out <- simulateFromModel(DV,model=models[[mod]],nsim=nsim,seed=seed,...)
+                    out <- simulateFromModel(DV,model=object@models[[mod]],nsim=nsim,seed=seed,...)
                  }
                  
                  # now set the data in dat to the correct variables
