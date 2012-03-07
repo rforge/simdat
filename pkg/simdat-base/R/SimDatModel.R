@@ -90,6 +90,9 @@ setMethod("getData","SimDatModel",
     function(object,...) {
         dat <- as.data.frame(object@variables)
         colnames(dat) <- names(object@variables)
+        for(i in 1:length(dat)) {
+            dat[,i] <- asS3(dat[,i])
+        }
         dat
     } 
 )

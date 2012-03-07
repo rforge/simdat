@@ -281,7 +281,7 @@ setMethod("simulateFromModel",signature(object="Variable",model="GamlssModel"),
                     # no truncation
                     out <- do.call(paste("r",model@family$family[1],sep=""),args=args)
                 }
-                out <- round(out,digits=object@digits)
+                if(length(object@digits) > 0) out <- round(out,digits=object@digits)
             } else {
                 # no truncation for non-metric variables
                 out <- do.call(paste("r",model@family$family[1],sep=""),args=args)

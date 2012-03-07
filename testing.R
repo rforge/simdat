@@ -11,6 +11,7 @@ gamlssmod <- GamlssModelFromGlmWizardDf(df)
 mod <- new("SimDatModel")
 vars <- list()
 DV <- new("RandomIntervalVariable",
+      rep(0.0,sum(df$n)),
       name = df@dependent,
       min = -Inf,
       max = Inf)
@@ -33,10 +34,12 @@ mod@modelID[which(names(mod@variables) == df@dependent)] <- 1
 mod@structure <- matrix(0,ncol=length(mod@variables),nrow=length(mod@variables))
 mod@structure[-which(mod@modelID == 1),which(mod@modelID == 1)] <- 1
 
+getData(simulate(mod))
+
 object <- mod@variables[[1]]
 model <- mod@models[[1]]
 data <- getData(mod)
 for(i in 1:ncol(data)) {
     if(isMetric(data[,i])) data[,i] <- as.numeric(data[,i]) else data[,i] <- as.factor(data[,i])
 }
-pred
+predict(model@mu@formula,data=data)
