@@ -50,8 +50,8 @@ ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=f
     )
     #DVs <- list(DVs)
     mFormula <- as.formula(paste(DV$name,"~",paste(factor.names,collapse="*")))
-    dat <- as.data.frame(fixed)
-    colnames(dat) <- names(fixed)
+    dat <- getData(fixed)
+    #colnames(dat) <- names(fixed)
     dat[,DV$name] <- rep(means,N)
     mmod <- lm(mFormula,data=dat)
     mcoeff <- coefficients(mmod)
@@ -61,8 +61,8 @@ ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=f
     } else {
       sFormula <- as.formula(paste(DV$name,"~",1))
     }
-    dat <- as.data.frame(fixed)
-    colnames(dat) <- names(fixed)
+    dat <- getData(fixed)
+    #colnames(dat) <- names(fixed)
     dat[,DV$name] <- DV$family$sigma.linkfun(rep(sds,N))
     smod <- lm(sFormula,data=dat)
     scoeff <- coefficients(smod)

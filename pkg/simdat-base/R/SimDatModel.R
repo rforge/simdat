@@ -63,11 +63,13 @@ setMethod("simulate",signature(object="SimDatModel"),
                  }
                  
                  # now set the data in dat to the correct variables
-                 if(is(out,"VariableList") | is(out,"Variable")) {
+                 if(is(out,"VariableList") & length(out) == length(vars)) {
                     for(i in vars) object@variables[[i]] <- out[[i]]
+                 } else if(is(out,"Variable") & length(vars) == 1) {
+                     object@variables[[vars]] <- out
                  } else {
                  # probably didn't get the correct format back; but let's try...
-                     warning("simulate method in model ",mod," did not return an object of class Variable")
+                     warning("simulate method in model ",mod," did not return an object of class Variable or VariableList")
                      if(is.matrix(out) | is.data.frame(out)) {
                         if(ncol(out) > 1) {
                             # multivariate data
@@ -88,12 +90,7 @@ setMethod("simulate",signature(object="SimDatModel"),
 
 setMethod("getData","SimDatModel",
     function(object,...) {
-        dat <- as.data.frame(object@variables)
-        colnames(dat) <- names(object@variables)
-        for(i in 1:length(dat)) {
-            dat[,i] <- asS3(dat[,i])
-        }
-        dat
+        getData(object@variables,...)
     } 
 )
 

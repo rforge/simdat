@@ -163,13 +163,21 @@ setClass("MatParModel",
 )
 
 setMethod("predict",signature(object="ParModel"),
-    function(object,...,data) {
+    function(object,...,data,na.action = c("exclude","pass")) {
+        na.action <- match.arg(na.action)
         if(!missing(data)) {
             m <- model.matrix(object@formula,...,data=data)
         } else {
             m <- model.matrix(object@formula,...)
         }
-        as.numeric(m%*%(object@coefficients))
+        #TODO: don't know if this is general enough!
+        coeff <- object@coefficients
+        excl <- is.na(coeff)
+        if(sum(excl) > 0 & na.action=="exclude") {
+            m <- m[,!excl]
+            coeff <- coeff[!excl]
+        }
+        as.numeric(m%*%coeff)
     }
 )
 

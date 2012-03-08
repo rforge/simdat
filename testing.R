@@ -1,11 +1,18 @@
 # Test Anova wizard
-
+source("~/Documents/RForge/simdat/sourcing.R")
 tmp <- ANOVA()
+simulate(tmp)
+
 arglist <- list()
 arglist[["dep"]] <- variables(tmp)[names(variables(tmp)) == "Y"][[1]]
 arglist[["fac"]] <- VariableList(variables(tmp)[names(variables(tmp)) %in% c("A","B")])
 arglist[["family"]] <- .SimDatGetDistributionFromName("normal")
 df <- do.call("GlmWizardDf",args=arglist)
+
+tmp <- SimDatModelFromGlmWizardDf(df=df)
+
+
+
 df$mu <- rnorm(nrow(df))
 gamlssmod <- GamlssModelFromGlmWizardDf(df)
 mod <- new("SimDatModel")

@@ -176,27 +176,53 @@ GamlssModelFromGlmWizardDf <- function(df) {
   return(mod)
 }
 
-SimDatModelFromGlmWizardDf <- function(df,mod=NULL) {
+SimDatModelFromGlmWizardDf <- function(df,...,model=NULL,model_id=NULL,model_name=NULL) {
 
   if(!is(df,"GlmWizardDf")) stop("df must be of class GlmWizardDf")
+  #if(!is.null(mod) & !is(mod,"SimDatModel")) stop("mod must be of class SimDatModel")
+  gamlssmod <- GamlssModelFromGlmWizardDf(df)
   
-  if(is.null(mod)) {
-    mod <- new("SimDatModel")
+  if(is.null(model)) {
+    model <- new("SimDatModel")
     # this will need n's in the df
     if(is.null(df$n)) stop("df needs a column named n")
-    gamlssmod <- GamlssModelFromGlmWizardDf(df)
+    
     DV <- new("RandomIntervalVariable",
+      rep(0.0,sum(df$n)),
       name = df@dependent,
       min = -Inf,
       max = Inf)
     
     
+    IVs <- list()
+    if(length(df@factor) > 0) {
+        for(fac in df@factor) {
+            IVs <- c(IVs,list(new("NominalVariable",rep(df[,fac],df$n),name=fac)))
+        }
+    }
+    if(length(df@numeric) > 0) {
+        for(num in df@numeric) {
+            IVs <- c(IVs,list(new("IntervalVariable",rep(0.0,sum(df$n)),name=num)))
+        }
+    }
+    model@variables <- VariableList(c(IVs,list(DV)))
+    model@models <- ModelList(list(gamlssmod))
+    model@modelID <- as.numeric(names(model@variables) == df@dependent)
+    model@structure <- matrix(0,ncol=length(model@variables),nrow=length(model@variables))
+    model@structure[,which(names(model@variables) == df@dependent)] <- as.numeric(names(model@variables) %in% c(df@factor,df@numeric))
+    if(is.null(model_name)) model_name <- paste("model_",paste(sample(letters,size=10,replace=TRUE),collapse=""),sep="") 
+    model@name <- model_name
+    dep <- which(names(model@variables) == df@dependent)
   } else {
-    if(!is(mod,"SimDatModel")) stop("model must be of class SimDatModel")
-    
-    
+    if(!is(model,"SimDatModel")) stop("model must be of class SimDatModel")
+    if(is.null(model_id) | length(model_id) > 1 | !(model_id %in% seq_len(length(model@models)))) stop("incorrect model_id argument")
+    model@models[[model_id]] <- gamlssmod
+    dep <- which(model@modelID == model_id)
+    if(length(dep) > 1) stop("multiple dependent variables detected")
+    #model@variables[[dep]] <- simulateFromModel(model@variables[[dep]],model=model,...,data=getData(model))
   }
-  return(mod)
+  model@variables[[dep]] <- simulateFromModel(model@variables[[dep]],model=gamlssmod,...,data=getData(model,...))
+  return(model)
 }
 
 #arglist <- list()
