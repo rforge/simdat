@@ -1,8 +1,9 @@
 .getSimDatModels <- function() {
-    objects <- ls(pos=1)
+    #objects <- ls(pos=1)
+    objects <- ls(envir=parent.frame())
     result <- c();
     if (length(objects) > 0) for (i in 1:length(objects)) {
-    	d <- get(objects[i])
+    	d <- get(objects[i],envir=parent.frame())
     	if(is(d,"SimDatModel"))
         	result <- c(result,objects[i])
     }

@@ -13,7 +13,7 @@ source("factorialANOVA.R")
 source("repeatedMeasuresANOVA.R")
 source("rtnorm.R")
 source("utilities.R")
-tmp <- ANOVA()
+#tmp <- ANOVA()
 #tmp <- factorialANOVA()
 #tmp <- rmANOVA()
 

@@ -10,8 +10,19 @@ arglist[["family"]] <- .SimDatGetDistributionFromName("normal")
 df <- do.call("GlmWizardDf",args=arglist)
 
 tmp <- SimDatModelFromGlmWizardDf(df=df)
+getData(simulate(tmp))
 
 
+SDGE <- new.env()
+evalq(tmp2 <- ANOVA(),envir = SDGE)
+evalq(.getSimDatModels(),envir = SDGE)
+evalq(!is.null(tmp2),envir = SDGE)
+evalq(arglist <- list(),envir = SDGE)
+evalq(arglist[["dep"]] <- variables(tmp)[names(variables(tmp)) == "Y"][[1]],envir=SDGE)
+evalq(arglist[["fac"]] <- VariableList(variables(tmp)[names(variables(tmp)) %in% c("A","B")]),envir=SDGE)
+evalq(arglist[["family"]] <- .SimDatGetDistributionFromName("normal"),envir=SDGE)
+evalq(df <- do.call("GlmWizardDf",args=arglist),envir = SDGE)
+evalq(!is.null(df),envir=SDGE)
 
 df$mu <- rnorm(nrow(df))
 gamlssmod <- GamlssModelFromGlmWizardDf(df)
