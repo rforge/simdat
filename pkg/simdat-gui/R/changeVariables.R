@@ -64,7 +64,8 @@ setMethod("replaceVariable","SimDatModel",
 )
 
 setMethod("setValueAt","SimDatModel",
-  function(object,value,data_row,data_column,env=as.environment(1),...) {
+  #function(object,value,data_row,data_column,env=as.environment(1),...) {
+  function(object,value,data_row,data_column,env=parent.frame(),...) {
     name <- deparse(substitute(object))
     # add value 
     dat <- getData(object,...)
