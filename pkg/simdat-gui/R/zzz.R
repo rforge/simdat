@@ -25,10 +25,11 @@
 	dialog
 }
 
-.simdatExecute<-function(cmd){
+.simdatExecute <- function(cmd){
     cmds<-parse(text=cmd)
     for(i in 1:length(cmds)){
-        out<-eval(parse(text=paste("capture.output(",as.character(cmds[i]),")")),globalenv())
+        #out<-eval(parse(text=paste("capture.output(",as.character(cmds[i]),")")),globalenv())
+        out <- eval(parse(text=paste("capture.output(",as.character(cmds[i]),")")),parent.env())
         for(line in out)
             cat(line,"\n")
     }
