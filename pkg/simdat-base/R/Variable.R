@@ -75,149 +75,71 @@ setMethod("asFixed","Variable",
     }
 )
 
-setAs("NominalVariable","RandomNominalVariable",
-  function(from) {
-      new("RandomNominalVariable",
-        .Data = from@.Data,
-        levels = from@levels,
-        name = names(from))
-  }
+setAs("Variable","NominalVariable",
+    function(from,to) {
+        return(new(to,as.factor(asS3(from)),name = names(from)))
+    }
 )
 
-setAs("NominalVariable","OrdinalVariable",
-  function(from) {
-      new("OrdinalVariable",
-        ordered(from@.Data,labels=levels(from)),
-        name = names(from))
-  }
+setAs("Variable","RandomNominalVariable",
+    function(from,to) {
+        return(new(to,as.factor(asS3(from)),name = names(from)))
+    }
+)
+         
+                 
+setAs("Variable","OrdinalVariable",
+    function(from,to) {
+        return(new(to,as.ordered(asS3(from)),name = names(from)))
+    }
 )
 
-setAs("NominalVariable","IntervalVariable",
-  function(from) {
-      new("IntervalVariable",
-        as.numeric(from),
-        name = names(from),
-        digits=getOption("digits"))
-  }
+setAs("Variable","RandomOrdinalVariable",
+    function(from,to) {
+        return(new(to,as.ordered(asS3(from)),name = names(from)))
+    }
 )
 
-setAs("NominalVariable","RatioVariable",
-  function(from) {
-      new("RatioVariable",
-        as.numeric(from),
-        name = names(from),
-        digits=getOption("digits"))
-  }
+setAs("Variable","IntervalVariable",
+    function(from,to) {
+        if(isMetric(from)) {
+            return(new(to,as.numeric(asS3(from)),name = names(from),digits=digits(from)))
+        } else {
+            return(new(to,as.numeric(asS3(from)),name = names(from),digits=getOption("digits")))
+        }
+    }
 )
 
-setAs("OrdinalVariable","RandomOrdinalVariable",
-  function(from) {
-      new("RandomOrdinalVariable",
-        .Data = from@.Data,
-        levels = from@levels,
-        name = names(from))
-  }
+setAs("Variable","RandomIntervalVariable",
+    function(from,to) {
+        if(isMetric(from)) {
+            return(new(to,as.numeric(asS3(from)),name = names(from),digits=digits(from)))
+        } else {
+            return(new(to,as.numeric(asS3(from)),name = names(from),digits=getOption("digits")))
+        }
+    }
 )
 
-setAs("OrdinalVariable","NominalVariable",
-  function(from) {
-      new("NominalVariable",
-        factor(from@.Data,labels=levels(from)),
-        name = names(from))
-  }
+setAs("Variable","RatioVariable",
+    function(from,to) {
+        if(isMetric(from)) {
+            return(new(to,as.numeric(asS3(from)),name = names(from),digits=digits(from)))
+        } else {
+            return(new(to,as.numeric(asS3(from)),name = names(from),digits=getOption("digits")))
+        }
+    }
 )
 
-setAs("OrdinalVariable","IntervalVariable",
-  function(from) {
-      new("IntervalVariable",
-        as.numeric(from),
-        name = names(from),
-        getOption("digits"))
-  }
-)
 
-setAs("OrdinalVariable","RatioVariable",
-  function(from) {
-      new("RatioVariable",
-        as.numeric(from),
-        name = names(from),
-        getOption("digits"))
-  }
+setAs("Variable","RandomRatioVariable",
+    function(from,to) {
+        if(isMetric(from)) {
+            return(new(to,as.numeric(asS3(from)),name = names(from),digits=digits(from)))
+        } else {
+            return(new(to,as.numeric(asS3(from)),name = names(from),digits=getOption("digits")))
+        }
+    }
 )
-
-setAs("IntervalVariable","RandomIntervalVariable",
-  function(from) {
-      new("RandomIntervalVariable",
-        from@.Data,
-        name = names(from),
-        digits=digits(from),
-        min=-Inf,
-        max=Inf)
-  }
-)
-
-setAs("IntervalVariable","NominalVariable",
-  function(from) {
-      new("NominalVariable",
-        factor(from@.Data),
-        name = names(from))
-  }
-)
-
-setAs("IntervalVariable","OrdinalVariable",
-  function(from) {
-      new("OrdinalVariable",
-        ordered(from),
-        name = names(from))
-  }
-)
-
-setAs("IntervalVariable","RatioVariable",
-  function(from) {
-      new("RatioVariable",
-        from@.Data,
-        name = names(from),
-        digits=digits(from))
-  }
-)
-
-setAs("RatioVariable","RandomRatioVariable",
-  function(from) {
-      new("RandomRatioVariable",
-        from@.Data,
-        name = names(from),
-        digits=digits(from),
-        min=-Inf,
-        max=Inf)
-  }
-)
-
-setAs("RatioVariable","NominalVariable",
-  function(from) {
-      new("NominalVariable",
-        factor(from@.Data),
-        name = names(from))
-  }
-)
-
-setAs("RatioVariable","OrdinalVariable",
-  function(from) {
-      new("OrdinalVariable",
-        ordered(from),
-        name = names(from))
-  }
-)
-
-setAs("RatioVariable","IntervalVariable",
-  function(from) {
-      new("IntervalVariable",
-        from@.Data,
-        name = names(from),
-        digits=digits(from))
-  }
-)
-
-##TODO: setAs("RandomNominalVariable","NominalVariable",
 
 setClass("VariableList",
   contains="list"

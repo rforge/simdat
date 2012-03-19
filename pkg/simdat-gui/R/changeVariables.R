@@ -1,6 +1,7 @@
 setMethod("addVariable","SimDatModel",
   function(object,variable,idx=NULL,env=parent.env(),...) {
     name <- deparse(substitute(object))
+    #if(!is(variable,"simdat-base::Variable")) stop("variable not valid")
     if(!is(variable,"simdat-base::Variable")) stop("variable not valid")
     if(!is.null(idx) & idx > 0) {
       object@modelID <- append(object@modelID,0,after=idx-1)
@@ -50,7 +51,8 @@ setMethod("deleteVariable","SimDatModel",
 setMethod("replaceVariable","SimDatModel",
   function(object,variable,idx,env=parent.env(),...) {
     name <- deparse(substitute(object))
-    if(!is(variable,"simdat-base::Variable")) stop("variable not valid")
+    #if(!is(variable,"simdat-base::Variable")) stop("variable not valid")
+    if(!is(variable,"Variable")) stop("variable not valid")
     if(idx > 0 & idx <= length(variables(object))) {
       vars <- variables(object)
       vars[[idx]] <- variable
@@ -96,5 +98,54 @@ setMethod("setValueAt","SimDatModel",
     variables(object)[[vid]] <- var
     assign(name,object,envir=env,...)
     return(invisible())
+  }
+)
+
+setMethod("removeRow","SimDatModel",
+  function(object,idx=NULL,env=parent.env(),...) {
+    if(!is.null(idx)) {
+        ns <-  unlist(lapply(variables(object),"length"))
+        if(!all(ns == ns[1])) stop("variables have unequal length")
+        ns <- ns[1]
+        #dat <- getData(object,...)
+        vars <- variables(object,...)
+        if(idx > 0 & idx <= ns) {
+            #dat <- dat[,-idx]
+            for(i in 1:length(vars)) {
+                vars[[i]]@.Data <- (vars[[i]])@.Data[-idx]
+            }
+            variables(object) <- vars
+        }
+    } else {
+        # do nothing
+    }
+    return(object)
+  }
+)
+
+setMethod("insertRow","SimDatModel",
+  function(object,idx=NULL,env=parent.env(),...) {
+    if(!is.null(idx)) {
+        ns <-  unlist(lapply(variables(object),"length"))
+        if(!all(ns == ns[1])) stop("variables have unequal length")
+        ns <- ns[1]
+        #dat <- getData(object,...)
+        vars <- variables(object,...)
+        if(idx == 1) {
+            for(i in 1:length(vars)) {
+                vars[[i]]@.Data <- c(NA,vars[[i]]@.Data)
+            }
+            variables(object) <- vars
+        } else if(idx > 1 & idx <= ns) {
+            #dat <- dat[,-idx]
+            for(i in 1:length(vars)) {
+                vars[[i]]@.Data <- c(vars[[i]]@.Data[1:(idx-1)],NA,vars[[i]]@.Data[idx:ns])
+            }
+            variables(object) <- vars
+        }
+    } else {
+        # do nothing
+    }
+    return(object)
   }
 )

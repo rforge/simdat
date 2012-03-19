@@ -1,6 +1,8 @@
 # Test Anova wizard
 source("~/Documents/RForge/simdat/sourcing.R")
 tmp <- ANOVA()
+as(variables(tmp,"Y"),"NominalVariable")
+
 simulate(tmp)
 
 arglist <- list()

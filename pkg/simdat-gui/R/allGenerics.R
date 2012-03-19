@@ -5,6 +5,8 @@ setGeneric("replaceModel",function(object,model,idx,env=parent.env(),...) standa
 setGeneric("addVariable",function(object,variable,idx=NULL,env=parent.env(),...) standardGeneric("addVariable"))
 setGeneric("deleteVariable",function(object,idx,env=parent.env(),...) standardGeneric("deleteVariable"))
 setGeneric("replaceVariable",function(object,variable,idx,env=parent.env(),...) standardGeneric("replaceVariable"))
+setGeneric("removeRow",function(object,idx,env=parent.env(),...) standardGeneric("removeRow"))
+setGeneric("insertRow",function(object,idx,env=parent.env(),...) standardGeneric("insertRow"))
 setGeneric("setValueAt",function(object,value,data_row,data_column,env=parent.env(),...) standardGeneric("setValueAt"))
 
 

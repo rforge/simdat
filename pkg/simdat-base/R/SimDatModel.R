@@ -13,6 +13,13 @@ setValidity("SimDatModel",
     nvar <- length(object@variables)
     if(ncol(object@structure)!=nvar | nrow(object@structure) != nvar) return(FALSE)
     if(length(object@models)!=length(unique(object@modelID[object@modelID > 0]))) return(FALSE)
+    if(!(all(unique(object@modelID[object@modelID > 0]) %in% seq(1,length(object@models))))) return(FALSE)
+    # check that variables with same model ID have same dependency graph
+    for(i in unique(object@modelID[object@modelID > 0])) {
+        if(length(which(object@modelID == i)) > 1) {
+            if(!all(apply(object@structure[,which(object@modelID == i)],1,function(x) x == x[1]))) return(FALSE)
+        }
+    }
     if(!all(object@structure %in% c(0,1))) return(FALSE)
     if(!isDAG(object@structure)) return(FALSE)
     # add more checks here
