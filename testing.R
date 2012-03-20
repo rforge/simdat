@@ -1,6 +1,7 @@
 # Test Anova wizard
 source("~/Documents/RForge/simdat/sourcing.R")
-tmp <- ANOVA()
+simdat.gui.env <- new.env()
+evalq("tmp <- ANOVA()",env=simdat.gui.env)
 as(variables(tmp,"Y"),"NominalVariable")
 
 simulate(tmp)
