@@ -1,19 +1,44 @@
 # Test Anova wizard
 source("~/Documents/RForge/simdat/sourcing.R")
-simdat.gui.env <- new.env()
-evalq("tmp <- ANOVA()",env=simdat.gui.env)
-as(variables(tmp,"Y"),"NominalVariable")
+tmp <- ANOVA()
+tmp <- addVariable(tmp,new("IntervalVariable",rep(NA,nrow(getData(tmp))),name="Z"))
+tmp <- replaceVariable(tmp,new("RandomIntervalVariable",rep(NA,nrow(getData(tmp))),name="Z",min=-10,max=10),idx=4)
+getData(simulate(tmp))
+.ModVarsSimDatModelModel(tmp)
+names(.ModVarsSimDatModelModel(tmp))
+is(models(tmp)[[2]])[1]
 
-simulate(tmp)
+
+
+simdat.gui.env <- new.env()
+evalq(tmp <- ANOVA(),env=simdat.gui.env)
+
+class(as(variables(tmp,"Y"),"NominalVariable"))
+
+tmp <- simulate(tmp)
 
 arglist <- list()
 arglist[["dep"]] <- variables(tmp)[names(variables(tmp)) == "Y"][[1]]
 arglist[["fac"]] <- VariableList(variables(tmp)[names(variables(tmp)) %in% c("A","B")])
 arglist[["family"]] <- .SimDatGetDistributionFromName("normal")
-df <- do.call("GlmWizardDf",args=arglist)
+df <- df.save <- do.call("GlmWizardDf",args=arglist)
 
-tmp <- SimDatModelFromGlmWizardDf(df=df)
-getData(simulate(tmp))
+getData(simulate(SimDatModelFromGlmWizardDf(df=df,model_name="tmp")))
+getData(simulate(SimDatModelFromGlmWizardDf(df=df,model=tmp)))
+
+df$sigma[1] <- .00001
+getData(simulate(SimDatModelFromGlmWizardDf(df=df,model_name="tmp")))
+df$mu[1] <- 1000
+getData(simulate(SimDatModelFromGlmWizardDf(df=df,model_name="tmp")))
+df$n <- rep(1,6)
+getData(simulate(SimDatModelFromGlmWizardDf(df=df,model_name="tmp")))
+tmp <- simulate(SimDatModelFromGlmWizardDf(df=df,model_name="tmp"))
+
+simdat.gui.env$df <- df
+evalq(tmp <- SimDatModelFromGlmWizardDf(df=df,model=tmp),env=simdat.gui.env)
+evalq(getData(simulate(SimDatModelFromGlmWizardDf(df=df,model=tmp))),env=simdat.gui.env)
+
+#getData(simulate(tmp))
 
 
 SDGE <- new.env()

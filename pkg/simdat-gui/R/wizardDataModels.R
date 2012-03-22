@@ -9,6 +9,13 @@ setClass("GlmWizardDf",
     numeric="character",
     family="gamlss.family")
 )
+
+setMethod("[<-","WizardDf",
+    function(x, i, j, ..., value)  {
+        x@.Data[[j]][i] <- value
+        return(x)
+    }
+)
     
 GlmWizardDf<- function(dep=NULL,fac=NULL,num=NULL,family=NULL,n=15,mu=0,sigma=1,nu=0,tau=0,beta=0) {
   if(!is(dep,"RandomVariable")) warning("dependent variable is not a random variable")
@@ -176,7 +183,7 @@ GamlssModelFromGlmWizardDf <- function(df) {
   return(mod)
 }
 
-SimDatModelFromGlmWizardDf <- function(df,...,model=NULL,model_id=NULL,model_name=NULL) {
+SimDatModelFromGlmWizardDf <- function(df,...,model=NULL,model_name=NULL) {
 
   if(!is(df,"GlmWizardDf")) stop("df must be of class GlmWizardDf")
   #if(!is.null(mod) & !is(mod,"SimDatModel")) stop("mod must be of class SimDatModel")
@@ -215,11 +222,36 @@ SimDatModelFromGlmWizardDf <- function(df,...,model=NULL,model_id=NULL,model_nam
     dep <- which(names(model@variables) == df@dependent)
   } else {
     if(!is(model,"SimDatModel")) stop("model must be of class SimDatModel")
+    model_id <- model@modelID[which(variableNames(model) == df@dependent)]
     if(is.null(model_id) | length(model_id) > 1 | !(model_id %in% seq_len(length(model@models)))) stop("incorrect model_id argument")
     model@models[[model_id]] <- gamlssmod
     dep <- which(model@modelID == model_id)
     if(length(dep) > 1) stop("multiple dependent variables detected")
     #model@variables[[dep]] <- simulateFromModel(model@variables[[dep]],model=model,...,data=getData(model))
+    #IVs <- list()
+    if(length(df@factor) > 0) {
+        for(fac in df@factor) {
+            fid <- which(variableNames(model) == fac)
+            variables(model)[[fid]]@.Data <- rep(df[,fac],df$n)@.Data
+        }
+    }
+    if(length(df@numeric) > 0) {
+        for(num in df@numeric) {
+            nid <- which(variableNames(model) == num)
+            variables(model)[[fid]]@.Data <- rep(0.0,sum(df$n))@.Data
+        }
+    }
+    model@variables[[dep]]@.Data <- rep(0.0,sum(df$n))@.Data
+    
+    tn <- sum(df$n)
+    ovar <- variableNames(model)
+    ovar <- (1:length(ovar))[!(ovar %in% c(df@dependent,df@factor,df@numeric))]
+    for(var in ovar) {
+        if(length(variables(model)[[var]]) != tn) {
+            variables(model)[[var]]@.Data <- rep(variables(model)[[var]]@.Data,length=tn)
+        }
+    }
+    
   }
   model@variables[[dep]] <- simulateFromModel(model@variables[[dep]],model=gamlssmod,...,data=getData(model,...))
   return(model)

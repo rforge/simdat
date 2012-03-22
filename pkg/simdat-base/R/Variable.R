@@ -306,10 +306,14 @@ setReplaceMethod("max","RandomIntervalVariable",
 
 setMethod("getData","VariableList",
     function(object,...) {
-        dat <- as.data.frame(object)
-        colnames(dat) <- names(object)
-        for(i in 1:length(dat)) {
-            dat[,i] <- asS3(dat[,i])
+        if(length(object) > 0) {
+            dat <- as.data.frame(object)
+            colnames(dat) <- names(object)
+            for(i in 1:length(dat)) {
+                dat[,i] <- asS3(dat[,i])
+            }
+        } else {
+            dat <- data.frame()
         }
         dat
     } 

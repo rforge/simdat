@@ -368,7 +368,29 @@ setMethod("simulateFromModel",signature(object="Variable",model="MvnormModel"),
     }
 )
 
+setClass("UniformModel",
+    contains = "Model"
+)
 
+setMethod("simulateFromModel",signature(object="Variable",model="UniformModel"),
+    function(object,model,nsim=1,seed,...,DV,data) {
+        n <- length(object)
+        if(isMetric(object)) {
+            min <- min(object)
+            max <- max(object)
+            if(min >= max) stop("maximum should be larger than minimum")
+            if(abs(min) == Inf) min <- -1e308
+            if(abs(max) == Inf) max <- 1e308
+            out <- runif(n,min,max)
+            if(length(object@digits) > 0) out <- round(out,digits=object@digits)
+            object@.Data <- out
+        } else {
+            levs <- levels(as.factor(object))
+            object@.Data <- sample(unique(object@.Data),size=n,replace=TRUE)
+        }
+        return(object)
+    }
+)
 
 setClass("ModelList",
   contains="list"

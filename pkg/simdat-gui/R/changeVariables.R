@@ -1,10 +1,16 @@
-setMethod("addVariable","SimDatModel",
-  function(object,variable,idx=NULL,env=parent.env(),...) {
-    name <- deparse(substitute(object))
+setMethod("addVariable",signature(object="SimDatModel",variable="Variable"),
+  function(object,variable,idx=NULL,env=parent.frame(),...) {
+  #function(object,variable,idx=NULL,env=parent.frame(),...) {
+    #name <- deparse(substitute(object))
     #if(!is(variable,"simdat-base::Variable")) stop("variable not valid")
-    if(!is(variable,"simdat-base::Variable")) stop("variable not valid")
-    if(!is.null(idx) & idx > 0) {
-      object@modelID <- append(object@modelID,0,after=idx-1)
+    #if(!is(variable,"Variable")) stop("variable not valid")
+    if(!is.null(idx) && idx > 0) {
+      if(isRandom(variable)) {
+        object@modelID <- append(object@modelID,length(object@models) + 1,after=idx-1)
+        object@models <- ModelList(c(object@models,list(new("UniformModel"))))
+      } else {
+        object@modelID <- append(object@modelID,0,after=idx-1)
+      }
       if(idx==1) {
        tstruc <- cbind(0,object@structure)
        tstruc <- rbind(0,tstruc)
@@ -21,19 +27,26 @@ setMethod("addVariable","SimDatModel",
       variables(object) <- VariableList(append(variables(object),variable,after=idx-1))
     } else {
       # append at the end
-      object@modelID <- append(object@modelID,0)
+      if(isRandom(variable)) {
+        object@modelID <- append(object@modelID,length(object@models) + 1)
+        object@models <- ModelList(c(object@models,list(new("UniformModel"))))
+      } else {
+        object@modelID <- append(object@modelID,0)
+      }
       tstruc <- cbind(object@structure,0)
       tstruc <- rbind(tstruc,0)
       object@structure <- tstruc
-      variables(object) <- VariableList(append(variables(object),variable))
+      variables(object) <- VariableList(append(variables(object),list(variable)))
     }
-  assign(name,object,envir=env,...)
-  return(invisible())
+  #assign(name,object,envir=env,...)
+  #return(invisible())
+  return(object)
   }
 )
 
 setMethod("deleteVariable","SimDatModel",
-  function(object,idx,env=parent.env(),...) {
+  function(object,idx,...) {
+  #function(object,idx,env=parent.frame(),...) {
     name <- deparse(substitute(object))
     if(idx > 0 & idx <= length(variables(object))) {
       if(object@modelID[idx] != 0) warning("deleting a variable with an assigned model; will delete model too")
@@ -44,24 +57,38 @@ setMethod("deleteVariable","SimDatModel",
     } else {
       stop("idx given not valid")
     }
-  return(invisible())
+    return(object)
+    #return(invisible())
   }
 )
 
 setMethod("replaceVariable","SimDatModel",
-  function(object,variable,idx,env=parent.env(),...) {
-    name <- deparse(substitute(object))
+  function(object,variable,idx,...) {
+  #function(object,variable,idx,env=parent.frame(),...) {
+    #name <- deparse(substitute(object))
     #if(!is(variable,"simdat-base::Variable")) stop("variable not valid")
     if(!is(variable,"Variable")) stop("variable not valid")
     if(idx > 0 & idx <= length(variables(object))) {
       vars <- variables(object)
+      if(isRandom(vars[[idx]])) wasRandom <- TRUE else wasRandom <- FALSE
+      if(isRandom(variable)) nowRandom <- TRUE else nowRandom <- FALSE
       vars[[idx]] <- variable
+      if(wasRandom & !nowRandom) {
+        object@models[[model@modelID[idx]]] <- NULL
+        object@modelID[idx] <- 0
+        object@structure[,idx] <- rep(0,nrow(object@structure))
+      }
+      if(!wasRandom & nowRandom) {
+        object@modelID[idx] <- length(object@models) + 1
+        object@models <- ModelList(c(object@models,list(new("UniformModel"))))
+      }
       variables(object) <- vars
-      assign(name,object,envir=env,...)
+      #assign(name,object,envir=env,...)
+      return(object)
     } else {
       stop("idx given not valid")
     }
-  return(invisible())
+  #return(invisible())
   }
 )
 
