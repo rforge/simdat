@@ -1,6 +1,11 @@
 # Test Anova wizard
 source("~/Documents/RForge/simdat/sourcing.R")
+
+tmp2 <- rmANOVA()
+
 tmp <- ANOVA()
+
+
 tmp <- addVariable(tmp,new("IntervalVariable",rep(NA,nrow(getData(tmp))),name="Z"))
 tmp <- replaceVariable(tmp,new("RandomIntervalVariable",rep(NA,nrow(getData(tmp))),name="Z",min=-10,max=10),idx=4)
 getData(simulate(tmp))

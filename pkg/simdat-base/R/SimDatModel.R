@@ -61,7 +61,8 @@ setMethod("simulate",signature(object="SimDatModel"),
                     #colnames(dat) <- names(object@variables)[IV]
                     #dat <- as.data.frame(object@variables)
                     #colnames(dat) <- names(object@variables)
-                    dat <- getData(object,...)
+                    # TODO: should define separate method for rmANOVA
+                    if(is(object,"rmANOVA")) dat <- getData(object,...,direction="long") else dat <- getData(object,...)
                     #colnames(dat) <- names(object@variables)
                     #TODO: need a method to transform into an S3 dataframe
                     out <- simulateFromModel(DV,model=object@models[[mod]],nsim=nsim,seed=seed,data=dat,...)

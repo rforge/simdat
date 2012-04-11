@@ -265,36 +265,36 @@ setMethod("simulateFromModel",signature(object="Variable",model="GamlssModel"),
         }
         args[["n"]] <- length(object) #else args[["n"]] <- length(args$mu)
         #if(!missing(DV)) {
-            if(isMetric(object)) {
-                min <- min(object)
-                max <- max(object)
-                w <- which(abs(c(min,max)) < Inf)
-                if(length(w) > 0) {
-                    # have to truncate
-                    if(length(w) == 2) {
-                        type <- "both"
-                        range <- c(min,max)
-                    } else {
-                        if(w == 1) {
-                            type <- "left"
-                            range <- min
-                        } else {
-                            type <- "right"
-                            range <- max
-                        }
-                    }
-                    rfun <- trun.r(range,family=model@family$family[1],type=type)
-                    out <- do.call(rfun,args=args)
+        if(isMetric(object)) {
+            min <- min(object)
+            max <- max(object)
+            w <- which(abs(c(min,max)) < Inf)
+            if(length(w) > 0) {
+                # have to truncate
+                if(length(w) == 2) {
+                    type <- "both"
+                    range <- c(min,max)
                 } else {
-                    # no truncation
-                    out <- do.call(paste("r",model@family$family[1],sep=""),args=args)
+                    if(w == 1) {
+                        type <- "left"
+                        range <- min
+                    } else {
+                        type <- "right"
+                        range <- max
+                    }
                 }
-                if(length(object@digits) > 0) out <- round(out,digits=object@digits)
+                rfun <- trun.r(range,family=model@family$family[1],type=type)
+                out <- do.call(rfun,args=args)
             } else {
-                # no truncation for non-metric variables
+                # no truncation
                 out <- do.call(paste("r",model@family$family[1],sep=""),args=args)
             }
-            object@.Data <- out
+            if(length(object@digits) > 0) out <- round(out,digits=object@digits)
+        } else {
+            # no truncation for non-metric variables
+            out <- do.call(paste("r",model@family$family[1],sep=""),args=args)
+        }
+        object@.Data <- out
         #} else {
         #    DV <- do.call(paste("r",object@family$family[1],sep=""),args=args)
         #}
@@ -304,14 +304,6 @@ setMethod("simulateFromModel",signature(object="Variable",model="GamlssModel"),
 
 setClass("GammlssModel",
     contains="GamlssModel"#,
-    #representation(
-    #    mu="ParModel",
-    #    sigma="ParModel",
-    #    nu="ParModel",
-        #nu.random="ParModel",
-    #    tau="ParModel",
-    #    family="gamlss.family"
-    #)
 )
 
 setMethod("simulate",signature(object="GammlssModel"),
