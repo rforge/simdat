@@ -8,7 +8,7 @@ setClass("rmANOVA",
     IDvar="character" # name of subject ID variable
   )
 )
-  
+
 setMethod("getData",
   signature(object="rmANOVA"),
     function(object,...,direction) {

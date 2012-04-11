@@ -17,6 +17,9 @@ is(models(tmp)[[2]])[1]
 
 simdat.gui.env <- new.env()
 evalq(tmp <- ANOVA(),env=simdat.gui.env)
+evalq(levels(variables(tmp)[[1]]) <- c("A11","A22","A33"),env=simdat.gui.env)
+evalq(levels(variables(tmp)[[1]]),env=simdat.gui.env)
+
 
 class(as(variables(tmp,"Y"),"NominalVariable"))
 

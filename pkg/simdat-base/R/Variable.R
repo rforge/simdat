@@ -214,7 +214,18 @@ setReplaceMethod("names",signature("Variable"),
 )
 
 setMethod("labels","Variable",
-  function(object) if(is(object,"IntervalVariable") | is(object,"RatioVariable")) NULL else labels(object)
+  function(object) if(is(object,"IntervalVariable") | is(object,"RatioVariable")) NULL else labels(asS3(object))
+)
+
+setReplaceMethod("levels",signature("NominalVariable"),
+  function(x,value) {
+    if(is.character(value)) {
+      x@levels <- value
+    } else {
+      x@levels <- as.character(value)
+    }
+    return(x)
+  }
 )
 
 setMethod("isMetric","VariableList",
