@@ -35,14 +35,14 @@ setMethod("getData",
     }
 )
 
-rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,3),labels=c("W1","W2","W3"))),N=rep(20,4),means=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsds=c(2,2,2,2),wsds=matrix(2,ncol=4,nrow=4),DV=list(name="Y",min=-Inf,max=Inf,digits=8,family=NO()),id.name="ID",display.direction=c("wide","long")) {
+rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,3),labels=c("W1","W2","W3"))),N=rep(20,4),means=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsds=c(2,2,2,2),wsds=c(1,.9,1.1,1),DV=list(name="Y",min=-Inf,max=Inf,digits=8,family=NO()),id.name="ID",display.direction=c("wide","long")) {
 
     display.direction <- match.arg(display.direction)
 
     if(!all(unlist(lapply(between,is.factor)))) stop("between should be a data.frame with factors")
     if(!all(unlist(lapply(within,is.factor)))) stop("within should be a data.frame with factors")
 
-    if(any(colnames(within) %in% colnames(between))) stop("within factors cannot have same names as between factors")
+    if(any(colnames(within) %in% colnames(between))) stop("within factors cannot hawve same names as between factors")
 
     if(is.null(DV$name)) DV$name <- "Y"
     if(is.null(DV$min)) DV$min <- -Inf
@@ -119,7 +119,7 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     mFormula <- as.formula(paste(DVs@name,"~",paste(factor.names,collapse="*")))
     dat <- getData(IVs)
     #colnames(dat) <- names(fixed)
-    dat <- cbind(dat,as.vector(t(apply(means,2,rep,times=N))))
+    dat <- cbind(dat,DV$family$mu.linkfun(as.vector(t(apply(means,2,rep,times=N)))))
     colnames(dat) <- c(names(IVs),names(DVs))
     #dat[,] <- 
     mmod <- lm(mFormula,data=dat)
@@ -134,7 +134,12 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     }
     dat <- getData(IVs)
     #colnames(dat) <- names(fixed)
-    dat <- cbind(dat,as.vector(t(apply(wsds,2,rep,times=N))))
+    #dat <- cbind(dat,as.vector(t(apply(wsds,2,rep,times=N))))
+    
+    # assumes (a vavriant of) compound symmetry:
+    #dat <- cbind(dat,rep(bsds,N) + wsds)
+    dat <- cbind(dat, DV$family$sigma.linkfun(wsds))
+    
     colnames(dat) <- c(names(IVs),names(DVs))
     #dat[,DV$name] <- DV$family$sigma.linkfun(rep(wsds,N))
     #dat[,] <- 

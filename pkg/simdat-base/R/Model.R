@@ -26,6 +26,9 @@ setMethod("isRandom","ParModel",
     }
 )
 
+
+
+# TODO: use formula with conditional instead of grouping
 setClass("RandomParModel",
    contains="ParModel",
    representation(

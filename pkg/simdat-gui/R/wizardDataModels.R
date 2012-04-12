@@ -10,6 +10,18 @@ setClass("GlmWizardDf",
     family="gamlss.family")
 )
 
+setClass("RmAnovaWizardDf",
+  contains="WizardDf",
+  representation(
+    dependent="character",
+    bfactor="character",
+    wfactor="character",
+    numeric="character",
+    family="gamlss.family",
+    errorSD="data.frame")
+)
+
+
 setMethod("[<-","WizardDf",
     function(x, i, j, ..., value)  {
         x@.Data[[j]][i] <- value
@@ -41,9 +53,9 @@ GlmWizardDf<- function(dep=NULL,fac=NULL,num=NULL,family=NULL,n=15,mu=0,sigma=1,
     if(!is.null(family)) {
       dat <- switch(family$nopar,
         cbind(dat,mu=rep(mu,nrow(dat))),
-        cbind(dat,mu=rep(mu,nrow(dat)),sigma=rep(sigma,nrow(dat))),
-        cbind(dat,mu=rep(mu,nrow(dat)),sigma=rep(sigma,nrow(dat)),nu=rep(nu,nrow(dat))),
-        cbind(dat,mu=rep(mu,nrow(dat)),sigma=rep(sigma,nrow(dat)),nu=rep(nu,nrow(dat)),tau=rep(tau,nrow(dat))))    
+        cbind(dat,mu=rep(mu,nrow(dat)),sigma=rep(sigma,length=nrow(dat))),
+        cbind(dat,mu=rep(mu,nrow(dat)),sigma=rep(sigma,length=nrow(dat)),nu=rep(nu,length=nrow(dat))),
+        cbind(dat,mu=rep(mu,nrow(dat)),sigma=rep(sigma,length=nrow(dat)),nu=rep(nu,length=nrow(dat)),tau=rep(tau,length=nrow(dat))))    
     } else {
       dat <- cbind(dat,mu=rep(mu,nrow(dat))) # always have 
     }
@@ -79,6 +91,104 @@ GlmWizardDf<- function(dep=NULL,fac=NULL,num=NULL,family=NULL,n=15,mu=0,sigma=1,
   #attr(dat,"distribution") <- dist
   return(dat)
 }
+
+RmAnovaWizardDf<- function(dep=NULL,bfac=NULL,wfac=NULL,num=NULL,family=NULL,n=15,mu=0,sigma=1,wsigma=1,nu=0,tau=0,beta=0) {
+  if(!is(dep,"RandomVariable")) warning("dependent variable is not a random variable")
+  if(!is.null(bfac) & !(is(bfac,"VariableList") | is(bfac,"Variable"))) stop("between factors need to be a VariableList or a single Variable")
+  if(!is.null(wfac) & !(is(wfac,"VariableList") | is(wfac,"Variable"))) stop("within factors need to be a VariableList or a single Variable")
+  if(!is.null(num) & !(is(num,"VariableList") | is(num,"Variable"))) stop("numerics need to be a VariableList or a single Variable")
+  if(!is.null(family) & !is(family,"gamlss.family")) stop("family needs to be a gamlss.family")
+  
+  
+  if(!is.null(bfac)) {
+    bfaclevs <- list()
+    
+    if(!is(bfac,"VariableList")) bfac <- VariableList(list(bfac))
+    bfnames <- names(bfac)
+    
+    for(i in 1:length(bfac)) {
+      bfaclevs[[i]] <- as.factor(levels(bfac[[i]]))
+    }
+    
+    dat <- as.data.frame(expand.grid(bfaclevs))
+    colnames(dat) <- names(bfac)
+    dat <- cbind(dat,n=as.integer(rep(n,nrow(dat))))
+  } else {
+    bfnames <- character(0)
+    dat <- data.frame(n=as.integer(n))
+  }
+     
+  if(!is.null(wfac)) {
+    wfaclevs <- list()
+    
+    if(!is(wfac,"VariableList")) wfac <- VariableList(list(wfac))
+    wfnames <- names(wfac)
+    
+    for(i in 1:length(wfac)) {
+      wfaclevs[[i]] <- as.factor(levels(wfac[[i]]))
+    }
+    
+    wdat <- as.data.frame(expand.grid(wfaclevs))
+    wnames <- apply(wdat,1,function(x) paste(x,collapse="."))
+    errorSdModel <- as.data.frame(matrix(rep(wsigma,length=length(wnames)),nrow=1,ncol=length(wnames)))
+    colnames(errorSdModel) <- paste("sigma",wnames,sep=".")
+  } else {
+    wfnames <- character(0)
+    errorSdModel <- as.data.frame(matrix(wsigma,nrow=1,ncol=1))
+  }
+   
+  if(is.null(family)) family <- NO()
+  if(!is.null(family)) {
+    if(!is.matrix(mu) & (length(wnames) > 1)) {
+      mu <- as.data.frame(matrix(mu,nrow=nrow(dat),ncol=length(wnames)))
+      colnames(mu) <- wnames
+      #colnames(mu) <- paste("mu",wnames,sep="_")
+    }
+    dat <- switch(family$nopar,
+      cbind(dat,mu=mu),
+      cbind(dat,mu=mu,sigma=rep(sigma,length=nrow(dat))),
+      cbind(dat,mu=mu,sigma=rep(sigma,length=nrow(dat)),nu=rep(nu,length=nrow(dat))),
+      cbind(dat,mu=mu,sigma=rep(sigma,length=nrow(dat)),nu=rep(nu,length=nrow(dat)),tau=rep(tau,length=nrow(dat))))
+  } else {
+    if(!is.matrix(mu) & (length(wnames) > 1)) {
+      mu <- as.data.frame(matrix(mu,nrow=nrow(dat),ncol=length(wnames)))
+      colnames(mu) <- wnames
+      #colnames(mu) <- paste("mu",wnames,sep="_")
+    }
+    dat <- cbind(dat,mu) # always have 
+  }
+  #} else {
+  #  fnames <- character(0)
+  #  # don't need to expand factors
+  #  dat <- switch(family$nopar,
+  #      data.frame(mu=mu),
+  #      data.frame(mu=mu,sigma=sigma),
+  #      data.frame(mu=mu,sigma=sigma,nu=nu),
+  #      data.frame(mu=mu,sigma=sigma,nu=nu,tau=tau))
+  #}
+  if(!is.null(num)) {
+  
+    if(!is(num,"VariableList")) num <- VariableList(list(num))
+    nnames <- names(num)
+    # add a beta for each numeric
+    betas <- as.data.frame(rep(0,length=length(num)))
+    colnames(betas) <- paste("beta(",names(num),")",sep="")
+    dat <- cbind(dat,betas)
+  } else {
+    nnames <- character(0)
+  }
+  
+  dat <- new("RmAnovaWizardDf",
+    .Data <- dat,
+    dependent=names(dep),
+    bfactor=bfnames,
+    wfactor=wfnames,
+    numeric=nnames,
+    family=family,
+    errorSD=errorSdModel)
+  return(dat)
+}
+
 
 GamlssModelFromGlmWizardDf <- function(df) {
   
@@ -257,6 +367,3 @@ SimDatModelFromGlmWizardDf <- function(df,...,model=NULL,model_name=NULL) {
   return(model)
 }
 
-#arglist <- list()
-#arglist["dep"] <- variables(tmp)[names(variables(tmp)) == "Y"]
-#dat <- do.call("GlmWizardDf",args=arglist)
