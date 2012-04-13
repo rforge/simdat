@@ -110,7 +110,7 @@ setMethod("models","SimDatModel",
 )
 
 setReplaceMethod("models","SimDatModel",
-  function(object,value,...) {
+  function(object,value) {
     if(!is(value,"ModelList")) {
       stop("cannot replace models; need a ModelList")
     } else {
@@ -144,7 +144,7 @@ setMethod("variables",signature(object="SimDatModel",names="character"),
 )
 
 setReplaceMethod("variables","SimDatModel",
-  function(object,value,...) {
+  function(object,value) {
     if(!is(value,"VariableList")) {
       stop("cannot replace variables; need a VariableList")
     } else {
@@ -162,7 +162,7 @@ setMethod("variableNames","SimDatModel",
 )
 
 setReplaceMethod("variableNames","SimDatModel",
-    function(object,value,...) {
+    function(object,value) {
         if(length(value) != length(variables(object,...))) {
             stop("need correct length to replace names")
         } else {

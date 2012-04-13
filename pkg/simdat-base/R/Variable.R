@@ -9,7 +9,17 @@ setClass("RandomNominalVariable",
     contains="NominalVariable"
 )
 
-#as
+NominalVariable <- function(data=factor(),name) {
+  if(!is.factor(data)) data <- as.factor(data)
+  if(missing(name)) stop("need to supply a name")
+  return(new("NominalVariable",data,name=name))
+}
+
+RandomNominalVariable <- function(data=factor(),name) {
+  if(!is.factor(data)) data <- as.factor(data)
+  if(missing(name)) stop("need to supply a name")
+  return(new("RandomNominalVariable",data,name=name)) 
+}
 
 setClass("OrdinalVariable",
   contains="ordered",
@@ -21,6 +31,18 @@ setClass("OrdinalVariable",
 setClass("RandomOrdinalVariable",
     contains="OrdinalVariable"
 )
+
+OrdinalVariable <- function(data=ordered(),name) {
+  if(!is.ordered(data)) data <- as.ordered(data)
+  if(missing(name)) stop("need to supply a name")
+  return(new("OrdinalVariable",data,name=name))
+}
+
+RandomOrdinalVariable <- function(data=ordered(),name) {
+  if(!is.ordered(data)) data <- as.ordered(data)
+  if(missing(name)) stop("need to supply a name")
+  return(new("RandomOrdinalVariable",data,name=name)) 
+}
 
 setClass("IntervalVariable",
   contains="numeric",
@@ -40,6 +62,20 @@ setClass("RandomIntervalVariable",
     )
 )
 
+IntervalVariable <- function(data=numeric(),name,digits=getOption('digits')) {
+  if(!is.numeric(data)) data <- as.numeric(data)
+  if(missing(name)) stop("need to supply a name")
+  if(!is.integer(digits)) digits <- as.integer(digits)
+  return(new("IntervalVariable",data,name=name,digits=digits))
+}
+
+RandomIntervalVariable <- function(data=numeric(),name,digits=getOption('digits'),min=-Inf,max=Inf) {
+  if(!is.numeric(data)) data <- as.numeric(data)
+  if(missing(name)) stop("need to supply a name")
+  if(!is.integer(digits)) digits <- as.integer(digits)
+  return(new("RandomIntervalVariable",data,name=name,digits=digits,min=min,max=max))
+}
+
 setClass("RatioVariable",
   contains="IntervalVariable"
 )
@@ -47,6 +83,23 @@ setClass("RatioVariable",
 setClass("RandomRatioVariable",
     contains="RandomIntervalVariable"
 )
+
+
+RatioVariable <- function(data=numeric(),name,digits=getOption('digits')) {
+  if(!is.numeric(data)) data <- as.numeric(data)
+  if(missing(name)) stop("need to supply a name")
+  if(!is.integer(digits)) digits <- as.integer(digits)
+  if(!is.numeric(min)) stop("need a numerical minimum")
+  if(!is.numeric(max)) stop("need a numerical maximum")
+  return(new("RatioVariable",data,name=name,digits=digits))
+}
+
+RandomRatioVariable <- function(data=numeric(),name,digits=getOption('digits'),min=-Inf,max=Inf) {
+  if(!is.numeric(data)) data <- as.numeric(data)
+  if(missing(name)) stop("need to supply a name")
+  if(!is.integer(digits)) digits <- as.integer(digits)
+  return(new("RandomRatioVariable",data,name=name,digits=digits,min=min,max=max))
+}
 
 setClassUnion("Variable",c("NominalVariable","OrdinalVariable","IntervalVariable","RatioVariable"))
 setClassUnion("RandomVariable",c("RandomNominalVariable","RandomOrdinalVariable","RandomIntervalVariable","RandomRatioVariable"))
@@ -282,7 +335,7 @@ setMethod("simulate",signature(object="Variable"),
 )
 
 setReplaceMethod("digits","IntervalVariable",
-  function(object,value,...) {
+  function(object,value) {
     if(is.numeric(value) & value >= 0) {
       if(!is.integer(value)) value <- as.integer(value)
       object@digits <- value
@@ -294,7 +347,7 @@ setReplaceMethod("digits","IntervalVariable",
 )
 
 setReplaceMethod("min","RandomIntervalVariable",
-  function(object,value,...) {
+  function(object,value) {
     if(is.numeric(value)) {
       object@min <- value
     } else {
@@ -305,7 +358,7 @@ setReplaceMethod("min","RandomIntervalVariable",
 )
 
 setReplaceMethod("max","RandomIntervalVariable",
-  function(object,value,...) {
+  function(object,value) {
     if(is.numeric(value)) {
       object@max <- value
     } else {

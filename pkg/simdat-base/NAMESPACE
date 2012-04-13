@@ -1,13 +1,21 @@
 import(methods)
 
-#export(
-#  factorialANOVA
-#)
+export(
+  ANOVA,
+  rmANOVA,
+  NominalVariable,
+  RandomNominalVariable,
+  OrdinalVariable,
+  RandomOrdinalVariable,
+  IntervalVariable,
+  RandomIntervalVariable,
+  RatioVariable,
+  RandomRatioVariable
+)
 
 exportClasses(
   Variable,
   RandomVariable,
-  FixedVariable,
   NominalVariable,
   RandomNominalVariable,
   OrdinalVariable,
@@ -18,12 +26,14 @@ exportClasses(
   RandomRatioVariable,
   VariableList,
   Model,
+  ModelList,
   ParModel,
   RandomParModel,
   MixedParModel,
   GamlssModel,
-  ModelList,
-  SimDatModel
+  SimDatModel,
+  ANOVA,
+  rmANOVA
 )
 
 exportMethods(
@@ -31,7 +41,7 @@ exportMethods(
 	isMetric,
 	simulateFromModel,
 	digits,
-	getData
+	getData,
 	variableNames,
 	"variableNames<-",
 	asRandom,

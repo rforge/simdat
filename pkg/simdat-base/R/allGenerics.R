@@ -16,20 +16,20 @@ setGeneric("digits",function(object,...) standardGeneric("digits"))
 #setGeneric("scale",function(object,...) standardGeneric("scale"))
 setGeneric("getData",function(object,...) standardGeneric("getData"))
 setGeneric("variableNames",function(object,...) standardGeneric("variableNames"))
-setGeneric("variableNames<-",function(object,value,...) standardGeneric("variableNames<-"))
+setGeneric("variableNames<-",function(object,value) standardGeneric("variableNames<-"))
 
 setGeneric("asRandom",function(object,...) standardGeneric("asRandom"))
 setGeneric("asFixed",function(object,...) standardGeneric("asFixed"))
 
-setGeneric("min<-",function(object,value,...) standardGeneric("min<-"))
-setGeneric("max<-",function(object,value,...) standardGeneric("max<-"))
-setGeneric("digits<-",function(object,value,...) standardGeneric("digits<-"))
+setGeneric("min<-",function(object,value) standardGeneric("min<-"))
+setGeneric("max<-",function(object,value) standardGeneric("max<-"))
+setGeneric("digits<-",function(object,value) standardGeneric("digits<-"))
 
-setGeneric("models",function(object,...) standardGeneric("models",...))
-setGeneric("models<-",function(object,value,...) standardGeneric("models<-",...))
+setGeneric("models",function(object,...) standardGeneric("models"))
+setGeneric("models<-",function(object,value) standardGeneric("models<-"))
 
-setGeneric("variables",function(object,names,...) standardGeneric("variables",...))
-setGeneric("variables<-",function(object,value,...) standardGeneric("variables<-",...))
+setGeneric("variables",function(object,names,...) standardGeneric("variables"))
+setGeneric("variables<-",function(object,value) standardGeneric("variables<-"))
 
 #setGeneric("getVariables",function(object,name,...) standardGeneric("getVariables"
 

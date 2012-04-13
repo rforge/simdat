@@ -1,5 +1,0 @@
-setClass("SimDatMultivariate",
-  contains="SimDatSkeleton"
-)
-
-

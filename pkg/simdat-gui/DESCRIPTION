@@ -1,4 +1,4 @@
-Package: simdat-gui
+Package: simdat.gui
 Version: 0.0-1
 Date: 2011-07-06
 Title: GUI for simdat data simulation package
