@@ -308,7 +308,8 @@ SimDatModelFromGlmWizardDf <- function(df,...,model=NULL,model_name=NULL) {
       rep(0.0,sum(df$n)),
       name = df@dependent,
       min = -Inf,
-      max = Inf)
+      max = Inf,
+      digits=getOption('digits'))
     
     
     IVs <- list()
@@ -367,3 +368,76 @@ SimDatModelFromGlmWizardDf <- function(df,...,model=NULL,model_name=NULL) {
   return(model)
 }
 
+SimDatModelFromRmAnovaWizardDf <- function(df,...,model=NULL,model_name=NULL) {
+
+  if(!is(df,"RmAnovaWizardDf")) stop("df must be of class RmAnovaWizardDf")
+  #if(!is.null(mod) & !is(mod,"SimDatModel")) stop("mod must be of class SimDatModel")
+  gamlssmod <- GamlssModelFromRmAnovaWizardDf(df)
+  
+  if(is.null(model)) {
+    model <- new("SimDatModel")
+    # this will need n's in the df
+    if(is.null(df$n)) stop("df needs a column named n")
+    
+    DV <- new("RandomIntervalVariable",
+      rep(0.0,sum(df$n)),
+      name = df@dependent,
+      min = -Inf,
+      max = Inf)
+    
+    
+    IVs <- list()
+    if(length(df@factor) > 0) {
+        for(fac in df@factor) {
+            IVs <- c(IVs,list(new("NominalVariable",rep(df[,fac],df$n),name=fac)))
+        }
+    }
+    if(length(df@numeric) > 0) {
+        for(num in df@numeric) {
+            IVs <- c(IVs,list(new("IntervalVariable",rep(0.0,sum(df$n)),name=num)))
+        }
+    }
+    model@variables <- VariableList(c(IVs,list(DV)))
+    model@models <- ModelList(list(gamlssmod))
+    model@modelID <- as.numeric(names(model@variables) == df@dependent)
+    model@structure <- matrix(0,ncol=length(model@variables),nrow=length(model@variables))
+    model@structure[,which(names(model@variables) == df@dependent)] <- as.numeric(names(model@variables) %in% c(df@factor,df@numeric))
+    if(is.null(model_name)) model_name <- paste("model_",paste(sample(letters,size=10,replace=TRUE),collapse=""),sep="") 
+    model@name <- model_name
+    dep <- which(names(model@variables) == df@dependent)
+  } else {
+    if(!is(model,"SimDatModel")) stop("model must be of class SimDatModel")
+    model_id <- model@modelID[which(variableNames(model) == df@dependent)]
+    if(is.null(model_id) | length(model_id) > 1 | !(model_id %in% seq_len(length(model@models)))) stop("incorrect model_id argument")
+    model@models[[model_id]] <- gamlssmod
+    dep <- which(model@modelID == model_id)
+    if(length(dep) > 1) stop("multiple dependent variables detected")
+    #model@variables[[dep]] <- simulateFromModel(model@variables[[dep]],model=model,...,data=getData(model))
+    #IVs <- list()
+    if(length(df@factor) > 0) {
+        for(fac in df@factor) {
+            fid <- which(variableNames(model) == fac)
+            variables(model)[[fid]]@.Data <- rep(df[,fac],df$n)@.Data
+        }
+    }
+    if(length(df@numeric) > 0) {
+        for(num in df@numeric) {
+            nid <- which(variableNames(model) == num)
+            variables(model)[[fid]]@.Data <- rep(0.0,sum(df$n))@.Data
+        }
+    }
+    model@variables[[dep]]@.Data <- rep(0.0,sum(df$n))@.Data
+    
+    tn <- sum(df$n)
+    ovar <- variableNames(model)
+    ovar <- (1:length(ovar))[!(ovar %in% c(df@dependent,df@factor,df@numeric))]
+    for(var in ovar) {
+        if(length(variables(model)[[var]]) != tn) {
+            variables(model)[[var]]@.Data <- rep(variables(model)[[var]]@.Data,length=tn)
+        }
+    }
+    
+  }
+  model@variables[[dep]] <- simulateFromModel(model@variables[[dep]],model=gamlssmod,...,data=getData(model,...))
+  return(model)
+}

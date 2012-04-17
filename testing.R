@@ -1,6 +1,8 @@
 # Test Anova wizard
 source("~/Documents/RForge/simdat/sourcing.R")
 
+tmp <- ANOVA()
+tmp2 <- ANOVA(DV=tmp@variables[[3]])
 
 arglist <- list()
 arglist[["dep"]] <- variables(tmp,c("Y"))

@@ -10,7 +10,8 @@ export(
   IntervalVariable,
   RandomIntervalVariable,
   RatioVariable,
-  RandomRatioVariable
+  RandomRatioVariable,
+  VariableList
 )
 
 exportClasses(
@@ -32,13 +33,13 @@ exportClasses(
   MixedParModel,
   GamlssModel,
   SimDatModel,
-  ANOVA,
   rmANOVA
 )
 
 exportMethods(
 	isRandom,
 	isMetric,
+	simulate,
 	simulateFromModel,
 	digits,
 	getData,

@@ -1,8 +1,8 @@
-import(methods)
+#import(methods)
 
-#export(
-#  factorialANOVA
-#)
+export(
+  simdat
+)
 
 #exportClasses(
 #	

@@ -382,3 +382,4 @@ setMethod("getData","VariableList",
         dat
     } 
 )
+

@@ -176,3 +176,40 @@ setMethod("insertRow","SimDatModel",
     return(object)
   }
 )
+
+
+setMethod("addVariable",signature(object="VariableList",variable="Variable"),
+  function(object,variable,idx=NULL,env=parent.frame(),...) {
+    if(!is.null(idx) && idx > 0) {
+      object <- VariableList(append(object,variable,after=idx-1))
+    } else {
+      object <- VariableList(append(object,list(variable)))
+    }
+    return(object)
+  }
+)
+
+setMethod("deleteVariable","VariableList",
+  function(object,idx,...) {
+  #function(object,idx,env=parent.frame(),...) {
+    if(idx > 0 & idx <= length(object)) {
+      object <- object[-idx]
+    } else {
+      stop("idx given not valid")
+    }
+    return(object)
+    #return(invisible())
+  }
+)
+
+setMethod("replaceVariable","VariableList",
+  function(object,variable,idx,...) {
+    if(!is(variable,"Variable")) stop("variable not valid")
+    if(idx > 0 & idx <= length(object)) {
+      object[[idx]] <- variable
+      return(object)
+    } else {
+      stop("idx given not valid")
+    }
+  }
+)
