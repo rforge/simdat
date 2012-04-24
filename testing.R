@@ -11,9 +11,13 @@ arglist[["wfac"]] <-  variables(tmp,c("B"))
 arglist[["family"]] <- .SimDatGetDistributionFromName("normal")
 df <- df.save <- do.call("RmAnovaWizardDf",args=arglist)
 
-RmAnovaWizardDf(dep=new("RandomIntervalVariable",name="Y"),wfac=VariableList(list(new("NominalVariable",factor(c(1,2),labels=c("V1","V2")),name="V"),new("NominalVariable",factor(c(1,2),labels=c("W1","W2")),name="W"))),bfac=VariableList(list(new("NominalVariable",factor(c(1,2),labels=c("A1","B2")),name="A"),new("NominalVariable",factor(c(1,2),labels=c("A1","B2")),name="B"))),mu=1,sigma=3)
-
 tmp2 <- rmANOVA(N=rep(1000,4))
+cov(getData(simulate(tmp2))[,4:7])
+
+tmp <- RmAnovaWizardDf(dep=new("RandomIntervalVariable",name="Y"),wfac=VariableList(list(new("NominalVariable",factor(c(1,2),labels=c("V1","V2")),name="V"),new("NominalVariable",factor(c(1,2),labels=c("W1","W2")),name="W"))),bfac=VariableList(list(new("NominalVariable",factor(c(1,2),labels=c("A1","B2")),name="A"),new("NominalVariable",factor(c(1,2),labels=c("A1","B2")),name="B"))),mu=1,sigma=3)
+SimDatModelFromRmAnovaWizardDf(tmp,model=tmp2)
+
+
 
 
 

@@ -293,6 +293,111 @@ GamlssModelFromGlmWizardDf <- function(df) {
   return(mod)
 }
 
+GamlssModelFromRmAnovaWizardDf <- function(df) {
+  
+  if(!is(df,"RmAnovaWizardDf")) stop("df must be of class RmAnovaWizardDf")
+  
+  dist <- df@family
+  nopar <- dist$nopar
+  DVname <- df@dependent
+  DVname <- DVname[nchar(DVname)>0]
+  bfacNames <- df@bfactor
+  bfacNames <- bfacNames[nchar(bfacNames)>0]
+  wfacNames <- df@wfactor
+  wfacNames <- wfacNames[nchar(wfacNames)>0]
+  numNames <- df@numeric
+  numNames <- numNames[nchar(numNames)>0]
+  
+  tdf <- df
+  if(nopar > 0) {
+    if(length(unique(df$mu))!=1) {
+      # assume identical slopes for now...
+      terms <- paste(facNames,collapse="*")
+      if(length(numNames) > 0) terms <- paste(terms,"+",paste(numNames,collapse = "+")) 
+      mformula <- as.formula(paste(DVname,"~",terms))
+    } else {
+      mformula <- as.formula(paste(DVname,"~",1))
+    }
+    tdf$mu <- dist$mu.linkfun(df$mu)
+    tform <- mformula
+    tform[[2]] <- as.name("mu")
+    mmod <- lm(tform,data=data.frame(tdf))
+    mcoeff <- coefficients(mmod)
+  }
+  if(nopar > 1) {
+    if(length(unique(df$sigma))!=1) {
+      # assume identical slopes for now...
+      terms <- paste(facNames,collapse="*")
+      if(length(numNames)>0) terms <- paste(terms,"+",paste(numNames,collapse = "+")) 
+      sformula <- as.formula(paste(DVname,"~",terms))
+    } else {
+      sformula <- as.formula(paste(DVname,"~",1))
+    }
+    tdf$sigma <- dist$sigma.linkfun(df$sigma)
+    tform <- sformula
+    tform[[2]] <- as.name("sigma")
+    smod <- lm(tform,data=data.frame(tdf))
+    scoeff <- coefficients(smod)
+    sformula[[2]] <- NULL
+  }
+  if(nopar > 2) {
+    if(length(unique(df$nu))!=1) {
+      # assume identical slopes for now...
+      terms <- paste(facNames,collapse="*")
+      if(length(numNames)>0) terms <- paste(terms,"+",paste(numNames,collapse = "+")) 
+      nformula <- as.formula(paste(DVname,"~",terms))
+    } else {
+      nformula <- as.formula(paste(DVname,"~",1))
+    }
+    tdf$nu <- dist$nu.linkfun(df$nu)
+    tform <- nformula
+    tform[[2]] <- as.name("nu")
+    nmod <- lm(tform,data=data.frame(tdf))
+    ncoeff <- coefficients(nmod)
+    nformula[[2]] <- NULL
+  }
+  if(nopar > 3) {
+    if(length(unique(df$tau))!=1) {
+      # assume identical slopes for now...
+      terms <- paste(facNames,collapse="*")
+      if(length(numNames)>0) terms <- paste(terms,"+",paste(numNames,collapse = "+"))
+      tformula <- as.formula(paste(DVname,"~",terms))
+    } else {
+      tformula <- as.formula(paste(DVname,"~",1))
+    }
+    tdf$tau <- dist$tau.linkfun(df$tau)
+    tform <- tformula
+    tform[[2]] <- as.name("tau")
+    tmod <- lm(tform,data=data.frame(tdf))
+    tcoeff <- coefficients(tmod)
+    tformula[[2]] <- NULL
+  }
+  
+  mod <- new("GamlssModel",family=dist)
+  
+  if(nopar > 0) {
+    mod@mu <- new("ParModel",
+      formula=mformula,
+      coefficients=mcoeff)
+  }
+  if(nopar > 1) {
+    mod@sigma <- new("ParModel",
+      formula=sformula,
+      coefficients=scoeff)
+  }
+  if(nopar > 2) {
+    mod@nu <- new("ParModel",
+      formula=nformula,
+      coefficients=ncoeff)
+  }
+  if(nopar > 3) {
+    mod@tau <- new("ParModel",
+      formula=tformula,
+      coefficients=tcoeff)
+  }
+  return(mod)
+}
+
 SimDatModelFromGlmWizardDf <- function(df,...,model=NULL,model_name=NULL) {
 
   if(!is(df,"GlmWizardDf")) stop("df must be of class GlmWizardDf")

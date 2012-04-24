@@ -51,7 +51,7 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     #if(is.null(DV$family)) DV$family <- gamlss.dist::NO()
     if(length(DV$name) != 1) stop("Repeated Measures ANOVA can only have a single dependent variable")
     
-    if(id.name %in% colnames(within) | id.name %in% colnames(between)) stop("is.name cannot be in between or within arguments")
+    if(id.name %in% colnames(within) | id.name %in% colnames(between)) stop("id.name cannot be in between or within arguments")
     
     matchArg <- function(x,nCells,name) {
       if(length(x) > nCells) {
