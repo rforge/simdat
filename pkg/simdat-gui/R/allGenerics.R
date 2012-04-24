@@ -11,5 +11,8 @@ setGeneric("replaceVariable",function(object,variable,idx,...) standardGeneric("
 setGeneric("removeRow",function(object,idx,env=parent.env(),...) standardGeneric("removeRow"))
 setGeneric("insertRow",function(object,idx,env=parent.env(),...) standardGeneric("insertRow"))
 setGeneric("setValueAt",function(object,value,data_row,data_column,env=parent.env(),...) standardGeneric("setValueAt"))
+setGeneric("getWizardDf",function(object,...) standardGeneric("getWizardDf"))
+#setGeneric("setWizardDf",function(object,df,...) standardGeneric("setWizardDf"))
+setGeneric("makeSimDatModel",function(object,...) standardGeneric("makeSimDatModel"))
 
 

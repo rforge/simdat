@@ -35,21 +35,46 @@ setMethod("getData",
     }
 )
 
-rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,3),labels=c("W1","W2","W3"))),N=rep(20,4),means=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsds=c(2,2,2,2),wsds=c(1,.9,1.1,1),DV=list(name="Y",min=-Inf,max=Inf,digits=8,family=NO()),id.name="ID",display.direction=c("wide","long")) {
+rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,3),labels=c("W1","W2","W3"))),N=rep(10,4),means=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsds=c(1,1,1,1),wsds=c(1,1,1,1),DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO(),id.name="ID",display.direction=c("wide","long")) {
 
     display.direction <- match.arg(display.direction)
 
-    if(!all(unlist(lapply(between,is.factor)))) stop("between should be a data.frame with factors")
-    if(!all(unlist(lapply(within,is.factor)))) stop("within should be a data.frame with factors")
+    if(is.data.frame(between)) {
+        if(!all(unlist(lapply(between,is.factor)))) stop("between should be a data.frame with factors")
+        tbetween <- between
+    } else if(is(between,"VariableList")) {
+        if(!all(unlist(lapply(between,isMetric)) == FALSE)) stop("between should be a VariableList with Nominal or Ordinal variables")
+        tbetween <- getData(between)
+        #colnames(tbetween) <- names(between)
+    } else {
+      stop("between should be a data.frame or VariableList")
+    }
+    if(is.data.frame(within)) {
+        if(!all(unlist(lapply(within,is.factor)))) stop("within should be a data.frame with factors")
+        twithin <- within
+    } else if(is(within,"VariableList")) {
+        if(!all(unlist(lapply(within,isMetric)) == FALSE)) stop("within should be a VariableList with Nominal or Ordinal variables")
+        twithin <- as.data.frame(within)
+        colnames(twithin) <- names(within)
+    } else {
+      stop("within should be a data.frame or VariableList")
+    }
+    if(any(colnames(twithin) %in% colnames(tbetween))) stop("within factors cannot have same names as between factors")
 
-    if(any(colnames(within) %in% colnames(between))) stop("within factors cannot hawve same names as between factors")
-
-    if(is.null(DV$name)) DV$name <- "Y"
-    if(is.null(DV$min)) DV$min <- -Inf
-    if(is.null(DV$max)) DV$max <- Inf
-    if(is.null(DV$digits)) DV$digits <- getOption("digits")
-    #if(is.null(DV$family)) DV$family <- gamlss.dist::NO()
-    if(length(DV$name) != 1) stop("Repeated Measures ANOVA can only have a single dependent variable")
+    # DV can be a list or (metric) Variable
+    if(is.list(DV)) {
+      if(is.null(DV$name)) DV$name <- "Y"
+      if(is.null(DV$min)) DV$min <- -Inf
+      if(is.null(DV$max)) DV$max <- Inf
+      if(is.null(DV$digits)) DV$digits=8
+      if(length(DV$name) != 1) stop("rmANOVA can only have a single dependent variable")
+    } else if(is(DV,"Variable")) {
+      if(!isMetric(DV)) stop("DV is not a metric Variable")
+    } else {
+      stop("DV should be a list or Variable")
+    }
+    # family must be a gamlss.family object
+    if(!is(family,"gamlss.family")) stop("family should be a gamlss.family object")
     
     if(id.name %in% colnames(within) | id.name %in% colnames(between)) stop("id.name cannot be in between or within arguments")
     
@@ -67,33 +92,39 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
 
     if(!is.matrix(means)) means <- as.matrix(means) 
 
-    nCells <- NROW(between) 
+    nCells <- NROW(tbetween) 
     N <- matchArg(N,nCells,"N")
     #means <- matchArg(means[,1],nCells,"means")
     bsds <- matchArg(bsds,nCells,"sds")
     
-    nIV <- sum(NCOL(between),NCOL(within))
-    tbetween <- data.frame(lapply(between,rep,times=N))
-    designMatrix <- cbind(as.data.frame(lapply(tbetween,rep,each=max(NROW(within),1))),within)
+    nIV <- sum(NCOL(tbetween),NCOL(twithin))
+    tbetween <- data.frame(lapply(tbetween,rep,times=N))
+    designMatrix <- cbind(as.data.frame(lapply(tbetween,rep,each=max(NROW(twithin),1))),twithin)
     #designMatrix <- between
     #designMatrix <- data.frame(lapply(designMatrix,rep,times=N))
-    factor.names <- c(colnames(between),colnames(within))
+    factor.names <- c(colnames(tbetween),colnames(twithin))
     
     IDvar <- new("NominalVariable",
-          factor(rep(1:sum(N),each=NROW(within))),
-          name = id.name
+        factor(rep(1:sum(N),each=NROW(twithin))),
+        name = id.name
     )
     
-    IVs <- list()
-    for(i in 1:nIV) {
-        IVs[[i]] <- new("NominalVariable",
-          designMatrix[,i],
-          name = colnames(designMatrix)[i]
-        )
+    if(is.data.frame(between)) {
+        IVs <- list()
+        for(i in 1:nIV) {
+            IVs[[i]] <- new("NominalVariable",
+              designMatrix[,i],
+              name = colnames(designMatrix)[i]
+            )
+        }
+        IVs <- VariableList(c(list(IDvar),IVs))
+    } else {
+        IVs <- between  
+      for(i in 1:nIV) {
+          IVs[[i]]@.Data <- designMatrix[,i]
+      }
     }
-    IVs <- VariableList(c(list(IDvar),IVs))
-    
-    wnames <- paste(DV$name,apply(within,1,paste,collapse="."),sep=".")
+    wnames <- paste(DV$name,apply(twithin,1,paste,collapse="."),sep=".")
     
     #DVs <- list()
     #for(i in 1:NROW(within)) {
@@ -107,19 +138,24 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     #}
     #DVs <- list(DVs)
     
-    DVs <- new("RandomIntervalVariable",
-        rep(NA,sum(N)*length(wnames)), # TODO: change computation of N
-        name = DV$name,
-        min=DV$min,
-        max=DV$max,
-        digits=as.integer(DV$digits)
-    )
+    if(!is(DV,"Variable")) {
+        DVs <- new("RandomIntervalVariable",
+            rep(NA,sum(N)*length(wnames)), # TODO: change computation of N
+            name = DV$name,
+            min=DV$min,
+            max=DV$max,
+            digits=as.integer(DV$digits)
+        )
+    } else {
+        DVs <- DV
+        DVs@.Data <- rep(DVs@.Data,length=sum(N)*length(wnames)) # TODO: change computation of N
+    }
     
     #mFormula <- as.formula(paste(paste("cbind(",paste(wnames,collapse=","),") ","~",paste(factor.names,collapse="*"))))
     mFormula <- as.formula(paste(DVs@name,"~",paste(factor.names,collapse="*")))
     dat <- getData(IVs)
     #colnames(dat) <- names(fixed)
-    dat <- cbind(dat,DV$family$mu.linkfun(as.vector(t(apply(means,2,rep,times=N)))))
+    dat <- cbind(dat,family$mu.linkfun(as.vector(t(apply(means,2,rep,times=N)))))
     colnames(dat) <- c(names(IVs),names(DVs))
     #dat[,] <- 
     mmod <- lm(mFormula,data=dat)
@@ -138,7 +174,7 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     
     # assumes (a vavriant of) compound symmetry:
     #dat <- cbind(dat,rep(bsds,N) + wsds)
-    dat <- cbind(dat, DV$family$sigma.linkfun(wsds))
+    dat <- cbind(dat, family$sigma.linkfun(wsds))
     
     colnames(dat) <- c(names(IVs),names(DVs))
     #dat[,DV$name] <- DV$family$sigma.linkfun(rep(wsds,N))
@@ -171,7 +207,7 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
       sigma=new("ParModel",
         formula=sFormula,
         coefficients=scoeff),
-      family=DV$family)
+      family=family)
       
     DVs <- simulateFromModel(object=DVs,model=mod,data=dat)
     

@@ -2,6 +2,20 @@
 source("~/Documents/RForge/simdat/sourcing.R")
 
 tmp <- ANOVA()
+
+facList <- variables(tmp,c("A","B"))
+depList <- variables(tmp,"Y")
+fam <- NO()
+awm <- AnovaWizardModel(dep=depList,fac=facList,fam=fam)
+gmlssdf <- getWizardDf(awm)
+tmp2 <- makeSimDatModel(awm,gmlssdf)
+
+
+
+
+
+
+
 tmp2 <- ANOVA(DV=tmp@variables[[3]])
 
 arglist <- list()

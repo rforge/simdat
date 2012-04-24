@@ -9,8 +9,8 @@ ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=f
       tdesign <- design
     } else if(is(design,"VariableList")) {
       if(!all(unlist(lapply(design,isMetric)) == FALSE)) stop("design should be a VariableList with Nominal or Ordinal variables")
-      tdesign <- as.data.frame(design)
-      colnames(tdesign) <- names(design)
+      tdesign <- getData(design)
+      #colnames(tdesign) <- names(design)
     } else {
       stop("design should be a data.frame or VariableList")
     }
@@ -20,7 +20,7 @@ ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=f
       if(is.null(DV$min)) DV$min <- -Inf
       if(is.null(DV$max)) DV$max <- Inf
       if(is.null(DV$digits)) DV$digits=8
-      if(is.null(DV$family)) DV$family <- gamlss.dist::NO()
+      #if(is.null(DV$family)) DV$family <- gamlss.dist::NO()
       if(length(DV$name) != 1) stop("ANOVA can only have a single dependent variable")
     } else if(is(DV,"Variable")) {
       if(!isMetric(DV)) stop("DV is not a metric Variable")
@@ -53,7 +53,7 @@ ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=f
     factor.names <- colnames(tdesign)
 
      
-    if(is.list(design)) {
+    if(is.data.frame(design)) {
       IVs <- list()   
       for(i in 1:nIV) {
           IVs[[i]] <- new("NominalVariable",
@@ -64,7 +64,7 @@ ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=f
     } else {
       IVs <- design  
       for(i in 1:nIV) {
-          IVs[[i]]@.Data <- designMatrix[,i]
+          IVs[[i]]@.Data <- designMatrix[,i]@.Data
       }
     }
     fixed <- new("VariableList",IVs)
@@ -77,7 +77,10 @@ ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=f
           max=DV$max,
           digits=as.integer(DV$digits)
       )
-    } else DVs <- DV
+    } else {
+        DVs <- DV
+        DVs@.Data <- rep(DVs@.Data,length=nrow(designMatrix)) # ensure dependent has the correct length!
+    }
     #DVs <- list(DVs)
     mFormula <- as.formula(paste(names(DVs),"~",paste(factor.names,collapse="*")))
     dat <- getData(fixed)

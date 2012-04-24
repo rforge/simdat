@@ -25,6 +25,7 @@ source("utils.R")
 source("changeVariables.R")
 source("changeModels.R")
 source("wizardDataModels.R")
+source("wizardModels.R")
 source("zzz.R")
 
 #arglist <- list()
