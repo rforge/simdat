@@ -1,6 +1,6 @@
 Package: simdat.base
-Version: 0.0-1
-Date: 2011-07-06
+Version: 0.1-0
+Date: 2012-04-25
 Title: Simulating data in R
 Author: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
 Maintainer: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
