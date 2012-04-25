@@ -54,8 +54,8 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
         twithin <- within
     } else if(is(within,"VariableList")) {
         if(!all(unlist(lapply(within,isMetric)) == FALSE)) stop("within should be a VariableList with Nominal or Ordinal variables")
-        twithin <- as.data.frame(within)
-        colnames(twithin) <- names(within)
+        twithin <- getData(within)
+        #colnames(twithin) <- names(within)
     } else {
       stop("within should be a data.frame or VariableList")
     }
@@ -97,7 +97,9 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     #means <- matchArg(means[,1],nCells,"means")
     bsds <- matchArg(bsds,nCells,"sds")
     
-    nIV <- sum(NCOL(tbetween),NCOL(twithin))
+    nBetween <- NCOL(tbetween)
+    nWithin <- NCOL(twithin)
+    nIV <- nBetween + nWithin
     tbetween <- data.frame(lapply(tbetween,rep,times=N))
     designMatrix <- cbind(as.data.frame(lapply(tbetween,rep,each=max(NROW(twithin),1))),twithin)
     #designMatrix <- between
@@ -109,22 +111,48 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
         name = id.name
     )
     
+        
     if(is.data.frame(between)) {
-        IVs <- list()
-        for(i in 1:nIV) {
-            IVs[[i]] <- new("NominalVariable",
+      bIVs <- vector("list",length=nBetween)
+      if(nBetween > 0) {
+        for(i in 1:nBetween) {
+            bIVs[[i]] <- new("NominalVariable",
               designMatrix[,i],
               name = colnames(designMatrix)[i]
             )
         }
-        IVs <- VariableList(c(list(IDvar),IVs))
-    } else {
-        IVs <- between  
-      for(i in 1:nIV) {
-          IVs[[i]]@.Data <- designMatrix[,i]
       }
-    }
-    wnames <- paste(DV$name,apply(twithin,1,paste,collapse="."),sep=".")
+    } else {
+      bIVs <- between
+      if(nBetween > 0) {
+        for(i in 1:nBetween) {
+            bIVs[[i]]@.Data <- designMatrix[,i]
+        }
+      }
+   }
+   
+   if(is.data.frame(within)) {
+      wIVs <- vector("list",length=nWithin)
+      if(nWithin > 0) {
+        for(i in 1:nWithin) {
+            wIVs[[i]] <- new("NominalVariable",
+              designMatrix[,nBetween + i],
+              name = colnames(designMatrix)[nBetween + i]
+            )
+        }
+      }
+    } else {
+      wIVs <- within
+      if(nWithin > 0) {
+        for(i in 1:nWithin) {
+            wIVs[[i]]@.Data <- designMatrix[,nBetween + i]
+        }
+      }
+   }
+        
+   IVs <- VariableList(c(list(IDvar),bIVs,wIVs))
+
+   #wnames <- paste(DV$name,apply(twithin,1,paste,collapse="."),sep=".")
     
     #DVs <- list()
     #for(i in 1:NROW(within)) {
@@ -139,6 +167,7 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     #DVs <- list(DVs)
     
     if(!is(DV,"Variable")) {
+        wnames <- paste(DV$name,apply(twithin,1,paste,collapse="."),sep=".")
         DVs <- new("RandomIntervalVariable",
             rep(NA,sum(N)*length(wnames)), # TODO: change computation of N
             name = DV$name,
@@ -147,6 +176,7 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
             digits=as.integer(DV$digits)
         )
     } else {
+        wnames <- paste(DV@name,apply(twithin,1,paste,collapse="."),sep=".")
         DVs <- DV
         DVs@.Data <- rep(DVs@.Data,length=sum(N)*length(wnames)) # TODO: change computation of N
     }

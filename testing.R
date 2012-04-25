@@ -10,6 +10,14 @@ awm <- AnovaWizardModel(dep=depList,fac=facList,fam=fam)
 gmlssdf <- getWizardDf(awm)
 tmp2 <- makeSimDatModel(awm,gmlssdf)
 
+bfacList <- VariableList(list(variables(tmp,c("A"))))
+wfacList <- VariableList(list(variables(tmp,c("B"))))
+depList <- variables(tmp,"Y")
+fam <- NO()
+awm <- RmAnovaWizardModel(dep=depList,bfac=bfacList,wfac=wfacList,fam=fam)
+gmlssdf <- getWizardDf(awm,which="between")
+withinDf <- getWizardDf(awm,which="within")
+tmp2 <- makeSimDatModel(awm,gmlssdf,withinDf)
 
 
 

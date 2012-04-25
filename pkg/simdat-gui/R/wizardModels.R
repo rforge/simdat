@@ -83,6 +83,20 @@ setClass("RmAnovaWizardModel",
     ID.name="character")
 )
 
+RmAnovaWizardModel <- function(dep,bfac,wfac,fam,ID.name="ID") {
+    if(!is(dep,"Variable")) stop("dependent needs to be a Variable")
+    if(!is(bfac,"VariableList")) stop("between factor needs to be a VariableList")
+    if(!is(wfac,"VariableList")) stop("within factor needs to be a VariableList")
+    if(!is(fam,"gamlss.family")) stop("family needs to be a gamlss.family")
+    out <- new("RmAnovaWizardModel",
+        dependent = dep,
+        bdesign = bfac,
+        wdesign = wfac,
+        family = fam,
+        ID.name=ID.name)
+    return(out)
+}
+
 setMethod("getWizardDf","RmAnovaWizardModel", 
   function(object,which=c("between","within")) {
     which=match.arg(which)
@@ -94,6 +108,7 @@ setMethod("getWizardDf","RmAnovaWizardModel",
       }
       bdat <- unique(bdat)
       wdat <- getData(object@wdesign)
+      wdat <- unique(wdat)
       #if(NROW(wdat) < 1 || NCOL(wdat) < 1) {
       #  wdat <- data.frame(NA)
       #}
@@ -116,8 +131,9 @@ setMethod("getWizardDf","RmAnovaWizardModel",
     }
     if(which=="within") {
       wdat <- getData(object@wdesign)
-      out <- as.data.frame(matrix(,nrow=family$nopar - 1,ncol=NROW(wdat)))
-      wnames <- apply(bdat,1,function(x) paste(x,collapse="."))
+      wdat <- unique(wdat)
+      out <- as.data.frame(matrix(,nrow=nopar - 1,ncol=NROW(wdat)))
+      wnames <- apply(wdat,1,function(x) paste(x,collapse="."))
       colnames(out) <- wnames
       
       if(nopar < 2) return(data.frame()) else rownames(out) <- c("sigma","nu","tau")[1:(nopar - 1)]
@@ -138,12 +154,16 @@ setMethod("makeSimDatModel","RmAnovaWizardModel",
         }
         
         within <- object@wdesign
+        twithin <- unique(getData(within))
+        for(i in 1:length(within)) {
+            within[[i]]@.Data <- twithin[,names(within)[i]]@.Data
+        }
         
         family <- object@family
         
         N <- bdf[,"N"]
         
-        wdat <- getData(object@wdesign)
+        wdat <- getData(within)
         wnames <- apply(wdat,1,function(x) paste(x,collapse="."))
       
         means <- bdf[,paste("mu",wnames,sep=".")]
@@ -156,7 +176,7 @@ setMethod("makeSimDatModel","RmAnovaWizardModel",
         
         family <- object@family
         
-        out <- rmANOVA(between=between,within=within,N=N,means=means,bsds=bsds,wsds=wsds,DV=DV,family=family,ID.name=object@ID.name,display.direction="wide")
+        out <- rmANOVA(between=between,within=within,N=N,means=means,bsds=bsds,wsds=wsds,DV=DV,family=family,id.name=object@ID.name,display.direction="wide")
         
         return(out)
     }
