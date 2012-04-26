@@ -28,7 +28,7 @@ setMethod("getWizardDf","AnovaWizardModel",
       }
       # need to get unique rows in dat
       dat <- unique(dat)
-      dat[,"N"] <- rep(10,nrow(dat))
+      dat[,"N"] <- as.integer(rep(10,nrow(dat)))
       if(nopar > 0) {
         dat[,"mu"] <- 0
       }
@@ -113,7 +113,7 @@ setMethod("getWizardDf","RmAnovaWizardModel",
       #  wdat <- data.frame(NA)
       #}
       wnames <- apply(wdat,1,function(x) paste(x,collapse="."))
-      bdat[,"N"] <- rep(10,nrow(bdat))
+      bdat[,"N"] <- as.integer(rep(10,nrow(bdat)))
       if(nopar > 0) {
         munames <- paste("mu",wnames,sep=".")
         bdat[,munames] <- 0

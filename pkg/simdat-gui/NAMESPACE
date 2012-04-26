@@ -1,4 +1,4 @@
-#import(methods)
+import(methods)
 
 export(
   simdat
