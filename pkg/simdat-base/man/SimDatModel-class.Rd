@@ -2,7 +2,18 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{SimDatModel-class}
+
+\alias{getData}
+\alias{models}
+\alias{models<-}
+\alias{variableNames}
+\alias{variableNames<-}
+\alias{variables}
+\alias{variables<-}
+
 \alias{addModel,SimDatModel-method}
+
+
 \alias{addVariable,SimDatModel,Variable-method}
 \alias{deleteModel,SimDatModel-method}
 \alias{deleteVariable,SimDatModel-method}
@@ -60,22 +71,22 @@ Objects can be created by calls of the form \code{new("SimDatModel", ...)}.
     \item{variables}{\code{signature(object = "SimDatModel", names = "character")}: ... }
 	 }
 }
-\references{
+%\references{
 %%  ~~put references to the literature/web site here~~
-}
+%}
 \author{
 Maarten Speekenbrink
 }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
+%\seealso{
 %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
-}
+%}
 \examples{
 showClass("SimDatModel")
 }

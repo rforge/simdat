@@ -2,14 +2,28 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{ParModel-class}
-\alias{isRandom,ParModel-method}
+\alias{RandomParModel-class}
+\alias{MixedParModel-class}
+\alias{MultilevelParModel-class}
+
 \alias{predict,ParModel-method}
 
-\title{Class \code{"ParModel"}}
+\alias{isRandom,ParModel-method}
+\alias{isRandom,MultilevelParModel-method}
+\alias{isRandom,MixedParModel-method}
+\alias{isRandom,MultilevelParModel-method}
+\alias{isRandom,RandomParModel-method}
+\alias{isRandom,RandomParModelList-method}
+
+\alias{simulate,MixedParModel-method}
+\alias{simulate,RandomParModel-method}
+
+\title{Parameter models}
+
 \description{
-%%  ~~ A concise (1-5 lines) description of what the class is. ~~
+Objects of class \code{"ParModel"} are parameter models, as used in \linkS4class{GamlssModel}.
 }
-\section{Objects from the Class}{
+\section{Objects from the class }{
 Objects can be created by calls of the form \code{new("ParModel", ...)}.
 %%  ~~ describe objects here ~~ 
 }
@@ -25,22 +39,22 @@ Objects can be created by calls of the form \code{new("ParModel", ...)}.
     \item{predict}{\code{signature(object = "ParModel")}: ... }
 	 }
 }
-\references{
+%\references{
 %%  ~~put references to the literature/web site here~~
-}
+%}
 \author{
-%%  ~~who you are~~
+Maarten Speekenbrink
 }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
+%\seealso{
 %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
-}
+%}
 \examples{
 showClass("ParModel")
 }

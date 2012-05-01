@@ -2,11 +2,16 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{GamlssModel-class}
+\alias{GammlssModel-class}
+\alias{simulate,GamlssModel-method}
+\alias{simulate,GammlssModel-method}
 \alias{simulateFromModel,Variable,GamlssModel-method}
 
-\title{Class \code{"GamlssModel"}}
+\title{Class \code{"GamlssModel"} and \code{"GammlssModel"} }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the class is. ~~
+The GamlssModel class is used to simulate with gamlss family distributions.
+The GamlssModel has a slot for the four gamlss parameters 
+(mu, sigma, nu, and tau), each represented by a parameter model.
 }
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("GamlssModel", ...)}.
@@ -29,22 +34,25 @@ Class \code{"\linkS4class{Model}"}, directly.
     \item{simulateFromModel}{\code{signature(object = "Variable", model = "GamlssModel")}: ... }
 	 }
 }
-\references{
+
+%\references{
 %%  ~~put references to the literature/web site here~~
-}
+%}
+
 \author{
-%%  ~~who you are~~
+Maarten Speekenbrink
 }
-\note{
+
+%%\note{
 %%  ~~further notes~~
-}
+%%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
+%%\seealso{
 %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
-}
+%%}
 \examples{
 showClass("GamlssModel")
 }

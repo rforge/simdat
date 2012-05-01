@@ -35,7 +35,7 @@ setMethod("getData",
     }
 )
 
-rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,3),labels=c("W1","W2","W3"))),N=rep(10,4),means=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsds=c(1,1,1,1),wsds=c(1,1,1,1),DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO(),id.name="ID",display.direction=c("wide","long")) {
+rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,3),labels=c("W1","W2","W3"))),N=rep(10,4),mu=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsigma=c(1,1,1,1),wsigma=c(1,1,1,1),nu=NULL,tau=NULL,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO(),id.name="ID",display.direction=c("wide","long")) {
 
     display.direction <- match.arg(display.direction)
 
@@ -90,24 +90,48 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
       return(x)
     }
 
-    if(!is.matrix(means)) means <- as.matrix(means) 
-
-    nCells <- NROW(tbetween) 
-    N <- matchArg(N,nCells,"N")
-    #means <- matchArg(means[,1],nCells,"means")
-    bsds <- matchArg(bsds,nCells,"sds")
-    
-    nBetween <- NCOL(tbetween)
+    nCellsB <- NROW(tbetween)
+    nCellsW <- NROW(twithin)
     nWithin <- NCOL(twithin)
+    nBetween <- NCOL(twithin)
+    nCellsT <- NROW(tbetween)*NROW(twithin)
+    
+    if(!is.matrix(mu)) mu <- as.matrix(mu) 
+    if(ncol(mu) != NROW(twithin) || nrow(mu) != NROW(tbetween)) {
+      if(length(mu)!=1) warning("mu does not have correct size")
+      mu <- matrix(rep(mu,length=nCellsT),ncol=nCellsW,nrow=nCellsB)
+    }
+
+    npar <- family$nopar
+    
+    #nBetween <- NROW(tbetween)
+    #nWithin <- NROW(twithin)
+    
+    N <- matchArg(N,nCellsB,"N")
+    #means <- matchArg(means[,1],nCells,"means")
+    if(npar>1) {
+      bsigma <- matchArg(bsigma,nCellsB,"bsigma")
+      wsigma <- matchArg(wsigma,nCellsW,"bsigma")
+    }
+    
+    if(npar>2) {
+      nu <- matchArg(nu,nCellsT,"nu")
+      if(!is.matrix(nu)) nu <- matrix(nu,nrow=nCellsB,ncol=nCellsW)
+    }
+    if(npar>3) {
+      tau <- matchArg(tau,nCellsT,"tau")
+      if(!is.matrix(tau)) tau <- matrix(nu,nrow=nCellsB,ncol=nCellsW)
+    }
+    
     nIV <- nBetween + nWithin
     tbetween <- data.frame(lapply(tbetween,rep,times=N))
-    designMatrix <- cbind(as.data.frame(lapply(tbetween,rep,each=max(NROW(twithin),1))),twithin)
+    designMatrix <- cbind(as.data.frame(lapply(tbetween,rep,each=max(nCellsW,1))),twithin)
     #designMatrix <- between
     #designMatrix <- data.frame(lapply(designMatrix,rep,times=N))
     factor.names <- c(colnames(tbetween),colnames(twithin))
     
     IDvar <- new("NominalVariable",
-        factor(rep(1:sum(N),each=NROW(twithin))),
+        factor(rep(1:sum(N),each=nCellsW)),
         name = id.name
     )
     
@@ -152,19 +176,6 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
         
    IVs <- VariableList(c(list(IDvar),bIVs,wIVs))
 
-   #wnames <- paste(DV$name,apply(twithin,1,paste,collapse="."),sep=".")
-    
-    #DVs <- list()
-    #for(i in 1:NROW(within)) {
-    #  DVs[[i]] <- new("RandomIntervalVariable",
-    #    rep(NA,sum(N)),
-    #    name = wnames[i],
-    #    min=DV$min,
-    #    max=DV$max,
-    #    digits=as.integer(DV$digits)
-    #  )
-    #}
-    #DVs <- list(DVs)
     
     if(!is(DV,"Variable")) {
         wnames <- paste(DV$name,apply(twithin,1,paste,collapse="."),sep=".")
@@ -181,48 +192,65 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
         DVs@.Data <- rep(DVs@.Data,length=sum(N)*length(wnames)) # TODO: change computation of N
     }
     
-    #mFormula <- as.formula(paste(paste("cbind(",paste(wnames,collapse=","),") ","~",paste(factor.names,collapse="*"))))
     mFormula <- as.formula(paste(DVs@name,"~",paste(factor.names,collapse="*")))
     dat <- getData(IVs)
-    #colnames(dat) <- names(fixed)
-    dat <- cbind(dat,family$mu.linkfun(as.vector(t(apply(means,2,rep,times=N)))))
+    dat <- cbind(dat,family$mu.linkfun(as.vector(t(apply(mu,2,rep,times=N)))))
     colnames(dat) <- c(names(IVs),names(DVs))
-    #dat[,] <- 
     mmod <- lm(mFormula,data=dat)
     mcoeff <- coefficients(mmod)
     
-    # sigma
-    # TODO: correct computation!
-    if(length(unique(wsds))!=1) {
-      sFormula <- as.formula(paste(DVs@name,"~",paste(factor.names,collapse="*")))
-    } else {
-      sFormula <- as.formula(paste(DVs@name,"~",1))
-    }
-    dat <- getData(IVs)
-    #colnames(dat) <- names(fixed)
-    #dat <- cbind(dat,as.vector(t(apply(wsds,2,rep,times=N))))
-    
-    # assumes (a vavriant of) compound symmetry:
-    #dat <- cbind(dat,rep(bsds,N) + wsds)
-    dat <- cbind(dat, family$sigma.linkfun(wsds))
-    
-    colnames(dat) <- c(names(IVs),names(DVs))
-    #dat[,DV$name] <- DV$family$sigma.linkfun(rep(wsds,N))
-    #dat[,] <- 
-    smod <- lm(sFormula,data=dat)
-    scoeff <- coefficients(smod)
-    sFormula[[2]] <- NULL
-        
     # random intercept model
     rFormula <- as.formula(paste(DVs@name,"~ 1"))
-    rcoeff <- matrix(rnorm(length(unique(IDvar)),mean=0,sd=rep(bsds,N)),ncol=1)
+    rcoeff <- matrix(rnorm(length(unique(IDvar)),mean=0,sd=rep(bsigma,N)),ncol=1)
     grouping <- as.numeric(IDvar)
-    if(length(unique(bsds))>1) {
-      rsigma <- array(rep(bsds^2,N),dim=c(1,1,sum(N)))
+    if(length(unique(bsigma))>1) {
+      rsigma <- array(rep(bsigma^2,N),dim=c(1,1,sum(N)))
     } else {
-      rsigma <- array(bsds^2,dim=c(1,1,1))
+      rsigma <- array(bsigma^2,dim=c(1,1,1))
     }
     
+    # sigma
+    # TODO: correct computation!
+    if(npar > 1) {
+      if(length(unique(wsigma))!=1) {
+        sFormula <- as.formula(paste(DVs@name,"~",paste(factor.names,collapse="*")))
+      } else {
+        sFormula <- as.formula(paste(DVs@name,"~",1))
+      }
+      dat <- getData(IVs)
+      #colnames(dat) <- names(fixed)
+      #dat <- cbind(dat,as.vector(t(apply(wsds,2,rep,times=N))))
+      
+      # assumes (a variant of) compound symmetry:
+      #dat <- cbind(dat,rep(bsds,N) + wsds)
+      dat <- cbind(dat, family$sigma.linkfun(wsigma))
+      
+      colnames(dat) <- c(names(IVs),names(DVs))
+      #dat[,DV$name] <- DV$family$sigma.linkfun(rep(wsds,N))
+      #dat[,] <- 
+      smod <- lm(sFormula,data=dat)
+      scoeff <- coefficients(smod)
+      sFormula[[2]] <- NULL
+          
+    }
+    
+    if(npar > 2) {
+      nFormula <- as.formula(paste(DVs@name,"~",paste(factor.names,collapse="*")))
+      dat <- getData(IVs)
+      dat <- cbind(dat,family$nu.linkfun(as.vector(t(apply(nu,2,rep,times=N)))))
+      colnames(dat) <- c(names(IVs),names(DVs))
+      nmod <- lm(nFormula,data=dat)
+      ncoeff <- coefficients(nmod)
+    }
+    
+    if(npar > 3) {
+      tFormula <- as.formula(paste(DVs@name,"~",paste(factor.names,collapse="*")))
+      dat <- getData(IVs)
+      dat <- cbind(dat,family$tau.linkfun(as.vector(t(apply(tau,2,rep,times=N)))))
+      colnames(dat) <- c(names(IVs),names(DVs))
+      tmod <- lm(tFormula,data=dat)
+      tcoeff <- coefficients(tmod)
+    }
     # now make the DV model
     mod <- new("GammlssModel",
       mu=new("MixedParModel",
@@ -234,10 +262,22 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
           coefficients=rcoeff,
           grouping = grouping,
           sigma = rsigma)),
-      sigma=new("ParModel",
+          family=family)
+    if(npar > 1) {      
+      mod@sigma=new("ParModel",
         formula=sFormula,
-        coefficients=scoeff),
-      family=family)
+        coefficients=scoeff)
+    }
+    if(npar > 2) {      
+      mod@nu=new("ParModel",
+        formula=nFormula,
+        coefficients=ncoeff)
+    }
+    if(npar > 3) {      
+      mod@tau=new("ParModel",
+        formula=tFormula,
+        coefficients=tcoeff)
+    }
       
     DVs <- simulateFromModel(object=DVs,model=mod,data=dat)
     

@@ -1,7 +1,19 @@
 \name{Variable-class}
 \Rdversion{1.1}
 \docType{class}
+\alias{asFixed}
+\alias{asRandom}
+\alias{digits}
+\alias{digits<-}
+\alias{isMetric}
+\alias{isRandom}
+\alias{max<-}
+\alias{min<-}
+\alias{simulateFromModel}
+
+  
 \alias{Variable-class}
+\alias{RandomVariable-class}
 \alias{NominalVariable-class}
 \alias{NominalVariable}
 \alias{RandomNominalVariable-class}
@@ -18,7 +30,9 @@
 \alias{RatioVariable}
 \alias{RandomRatioVariable-class}
 \alias{RandomRatioVariable}
-\alias{addVariable,SimDatModel,Variable-method}
+
+
+%\alias{addVariable,SimDatModel,Variable-method}
 \alias{asFixed,Variable-method}
 \alias{asRandom,Variable-method}
 \alias{coerce,Variable,IntervalVariable-method}
@@ -35,13 +49,27 @@
 \alias{labels,Variable-method}
 \alias{names<-,Variable-method}
 \alias{names,Variable-method}
-\alias{simulateFromModel,Variable,GamlssModel-method}
+%\alias{simulateFromModel,Variable,GamlssModel-method}
 \alias{simulateFromModel,Variable,MixedParModel-method}
 \alias{simulateFromModel,Variable,MvnormModel-method}
 \alias{simulateFromModel,Variable,UniformModel-method}
+
 \alias{simulate,Variable-method}
 \alias{Summary,Variable-method}
+\alias{VariableList-class}
+\alias{VariableList}
+\alias{getData,VariableList-method}
+\alias{isMetric,VariableList-method}
+\alias{isRandom,VariableList-method}
 
+\alias{names,VariableList-method}
+\alias{names<-,VariableList-method}
+
+\alias{digits<-,IntervalVariable-method}
+\alias{levels<-,NominalVariable-method}
+\alias{max<-,RandomIntervalVariable-method}
+\alias{min<-,RandomIntervalVariable-method}
+  
 \title{Class \code{"Variable"}}
 \description{
 The Variable class is the base class for fixed and random variables in SimDat. There are four basic types of variables: nominal, ordinal, interval, and ratio variables. These can be fixed or random.
@@ -66,7 +94,6 @@ RandomRatioVariable(data=numeric(),name,digits=getOption('digits'),min=-Inf,max=
 }
 \section{Methods}{
   \describe{
-    \item{addVariable}{\code{signature(object = "SimDatModel", variable = "Variable")}: ... }
     \item{asFixed}{\code{signature(object = "Variable")}: ... }
     \item{asRandom}{\code{signature(object = "Variable")}: ... }
     \item{coerce}{\code{signature(from = "Variable", to = "IntervalVariable")}: ... }
@@ -91,28 +118,29 @@ RandomRatioVariable(data=numeric(),name,digits=getOption('digits'),min=-Inf,max=
     \item{Summary}{\code{signature(x = "Variable")}: ... }
 	 }
 }
-\references{
+%\references{
 %%  ~~put references to the literature/web site here~~
-}
+%}
 \author{
 Maarten Speekenbrink
 }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
+%\seealso{
 %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
-}
+%}
 \examples{
 showClass("Variable")
 ## create a Nominal variable
 A <- NominalVariable(factor(1:2,labels="A1","A2"),name="A")
 # derives some methods from 'factor':
 levels(A)
+levels(A) <- c("A1","A3")
 ## convert to a RandomInterval variable
 rA <- as(A,"RandomNominalVariable")
 ## check that it is actually a random variable:
