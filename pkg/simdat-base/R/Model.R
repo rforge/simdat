@@ -240,7 +240,7 @@ setClass("GamlssModel",
     )
 )
 
-setMethod("simulateFromModel",signature(object="Variable",model="MixedParModel"),
+setMethod("simulateFromModel",signature(object="RandomVariable",model="MixedParModel"),
   function(object,model,nsim=1,seed,...,data) {
     call <- match.call()
     args <- as.list(call[2:length(call)])
@@ -251,7 +251,7 @@ setMethod("simulateFromModel",signature(object="Variable",model="MixedParModel")
 
 
 # TODO: for consistency, should really simulate a DV, with a model as argument
-setMethod("simulateFromModel",signature(object="Variable",model="GamlssModel"),
+setMethod("simulateFromModel",signature(object="RandomVariable",model="GamlssModel"),
     function(object,model,nsim=1,seed,...,data) {
         npar <- model@family$nopar
         args <- list()
@@ -336,7 +336,7 @@ setClass("MvnormModel",
     )
 )
 
-setMethod("simulateFromModel",signature(object="Variable",model="MvnormModel"),
+setMethod("simulateFromModel",signature(object="RandomVariable",model="MvnormModel"),
     function(object,model,nsim=1,seed,...,DV,data) {
       if(!missing(data)) mu <- predict(object@mu,data=data,...) else mu <- predict(object@mu,...)
       if(is(DV,"VariableList")) {
@@ -367,8 +367,12 @@ setClass("UniformModel",
     contains = "Model"
 )
 
-setMethod("simulateFromModel",signature(object="Variable",model="UniformModel"),
-    function(object,model,nsim=1,seed,...,DV,data) {
+UniformModel <- function() {
+  new("UniformModel")
+}
+
+setMethod("simulateFromModel",signature(object="RandomVariable",model="UniformModel"),
+    function(object,model,nsim=1,seed,...) {
         n <- length(object)
         if(isMetric(object)) {
             min <- min(object)
@@ -382,6 +386,59 @@ setMethod("simulateFromModel",signature(object="Variable",model="UniformModel"),
         } else {
             levs <- levels(as.factor(object))
             object@.Data <- sample(unique(object@.Data),size=n,replace=TRUE)
+        }
+        return(object)
+    }
+)
+
+setClass("NormalModel",
+    contains = "Model",
+    representation(
+      mean="numeric",
+      sd="numeric)
+    )
+)
+
+NormalModel <- function(mean,sd) {
+  new("NormalModel",
+    mean=mean,
+    sd=sd)
+}
+
+setMethod("simulateFromModel",signature(object="RandomVariable",model="NormalModel"),
+    function(object,model,nsim=1,seed,...) {
+        n <- length(object)
+        family <- NO()
+        args <- list(n=n,mu=model@mean,sigma=family$sigma.linkfun(model@sd))
+        if(isMetric(object)) {
+            min <- min(object)
+            max <- max(object)
+            w <- which(abs(c(min,max)) < Inf)
+            if(length(w) > 0) {
+                # have to truncate
+                if(length(w) == 2) {
+                    type <- "both"
+                    range <- c(min,max)
+                } else {
+                    if(w == 1) {
+                        type <- "left"
+                        range <- min
+                    } else {
+                        type <- "right"
+                        range <- max
+                    }
+                }
+                rfun <- trun.r(range,family=family$family[1],type=type)
+                out <- do.call(rfun,args=args)
+            } else {
+                # no truncation
+                out <- do.call(paste("r",family$family[1],sep=""),args=args)
+            }
+            #out <- rnorm(n,mean=model@mean,sd=model@sd)
+            if(length(object@digits) > 0) out <- round(out,digits=object@digits)
+            object@.Data <- out
+        } else {
+            stop("Cannot simulate a non-metric Variable from a NormalModel")
         }
         return(object)
     }
@@ -403,5 +460,45 @@ ModelList <- function(list) {
 setValidity("ModelList",
   method=function(object) {
     all(lapply(object,function(x) is(x,"Model"))==TRUE)
+  }
+)
+
+setMethod("mean",signature(x="GamlssModel",
+  function(x,data,...) {
+    mu <- x@family$mu.linkinv(predict(x@mu,data=data))
+    return(mu)
+  }
+)
+
+setMethod("sd",signature(x="GamlssModel",
+  function(x,data,...) {
+    sigma <- x@family$sigma.linkinv(predict(x@sigma,data=data))
+    return(sigma)
+  }
+)
+
+setMethod("mean",signature(x="NormalModel",
+  function(x,...) {
+    return(x@mean)
+  }
+)
+
+setMethod("mean",signature(x="UniformModel",
+  function(x,DV,...) {
+    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
+    return(mean(c(min(DV),max(DV))))
+  }
+)
+
+setMethod("sd",signature(x="UniformModel",
+  function(x,DV,...) {
+    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
+    return(sqrt((1/12)*(max(DV)-min(DV))^2))
+  }
+)
+
+setMethod("sd",signature(x="NormalModel",
+  function(x,...) {
+    return(x@sd)
   }
 )
