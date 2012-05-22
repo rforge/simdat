@@ -122,42 +122,27 @@ setReplaceMethod("models","SimDatModel",
 
 setMethod("variables",signature(object="SimDatModel",names="ANY"),
   function(object) {
-    return(object@variables)
+    variables(object@variables)
   }
 )
 
 setMethod("variables",signature(object="SimDatModel",names="character"),
   function(object,names,...) {
-      if(length(names) == 1) {
-        id <- which(variableNames(object,...) == names)
-        if(length(id) > 0) {
-          return(object@variables[[id]])
-        } else {
-          return(NULL)
-        }
-      } else if(length(names) > 1) {
-        return(VariableList(object@variables[variableNames(object,...) %in% names]))
-      } else {
-        return(NULL)
-      }
-    }
+    variables(object@variables)   
+  }
 )
 
 setReplaceMethod("variables","SimDatModel",
   function(object,value) {
-    if(!is(value,"VariableList")) {
-      stop("cannot replace variables; need a VariableList")
-    } else {
-      object@variables <- value
-    }
-    return(object)
+    variables(object@variables) <- value
   }
 )
 
 
 setMethod("variableNames","SimDatModel",
     function(object,...) {
-        names(variables(object,...))
+      variableNames(variables(object,...))
+      #names(variables(object,...))
     }
 )
 

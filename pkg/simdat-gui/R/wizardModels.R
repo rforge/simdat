@@ -1,7 +1,7 @@
 setClass("WizardModel")
 
 setClass("AnovaWizardModel",
-  contains="WizardDf",
+  contains="WizardModel",
   representation(
     dependent="Variable",
     factor="VariableList",
@@ -17,6 +17,16 @@ AnovaWizardModel <- function(dep,fac,fam) {
         factor = fac,
         family = fam)
     return(out)
+}
+
+makeFactorialDesign <- function(varList) {
+  if(!is(varList,"VariableList")) stop("need a VariableList")
+  if(any(unlist(lapply(varList,isMetric)))) stop("can only work with nonMetric variables")
+  dat <- expand.grid(lapply(varList,levels))
+  for(i in 1:length(varList)) {
+    varList[[i]]@.Data <- dat[,i]
+  }
+  return(varList)
 }
 
 setMethod("getWizardDf","AnovaWizardModel", 
@@ -73,7 +83,7 @@ setMethod("makeSimDatModel","AnovaWizardModel",
 
 
 setClass("RmAnovaWizardModel",
-  contains="WizardDf",
+  contains="WizardModel",
   representation(
     dependent="Variable",
     bdesign="VariableList",

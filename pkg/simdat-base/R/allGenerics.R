@@ -31,6 +31,7 @@ setGeneric("models<-",function(object,value) standardGeneric("models<-"))
 setGeneric("variables",function(object,names,...) standardGeneric("variables"))
 setGeneric("variables<-",function(object,value) standardGeneric("variables<-"))
 
+setGeneric("sd",function(x,...) standardGeneric("sd"))
 #setGeneric("getVariables",function(object,name,...) standardGeneric("getVariables"
 
 #setGeneric("asNominal",function(object,...) standardGeneric("as.Nominal"))

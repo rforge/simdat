@@ -380,6 +380,45 @@ setMethod("getData","VariableList",
             dat <- data.frame()
         }
         dat
-    } 
+    }
 )
 
+setMethod("variableNames","VariableList",
+  function(object,...) {
+    names(object,...)
+  }
+)
+
+setMethod("variables",signature(object="VariableList",names="ANY"),
+  function(object) {
+    return(object)
+  }
+)
+
+setMethod("variables",signature(object="VariableList",names="character"),
+  function(object,names,...) {
+      if(length(names) == 1) {
+        id <- which(variableNames(object,...) == names)
+        if(length(id) > 0) {
+          return(object[[id]])
+        } else {
+          return(NULL)
+        }
+      } else if(length(names) > 1) {
+        return(VariableList(object[variableNames(object,...) %in% names]))
+      } else {
+        return(NULL)
+      }
+    }
+)
+
+setReplaceMethod("variables","VariableList",
+  function(object,value) {
+    if(!is(value,"VariableList")) {
+      stop("cannot replace variables; need a VariableList")
+    } else {
+      object <- value
+    }
+    return(object)
+  }
+)

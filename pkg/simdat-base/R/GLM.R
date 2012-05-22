@@ -1,11 +1,12 @@
 setClass("GLM",
   contains="SimDatModel")
 
-GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),covariates=variableList(list(RandomIntervalVariable(numeric(sum(N)),digits=8,min=-Inf,max=Inf,name="X"))),covariateModels=modelList(list(NormalModel(mean=0,sd=1))),N=c(15,15,15,15),mu=c(0,1,2,3),sigma=c(2,2,2,2),nu=NULL,tau=NULL,beta=c(1,1,1,1),DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO()) {
+GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),covariates=VariableList(list(RandomIntervalVariable(numeric(sum(N)),digits=8,min=-Inf,max=Inf,name="X"))),covariateModels=ModelList(list(NormalModel(mean=0,sd=1))),N=c(15,15,15,15),mu=c(0,1,2,3),sigma=c(2,2,2,2),nu=NULL,tau=NULL,beta=c(1,1,1,1),DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO()) {
 
+    design <- factors
     # design can be a data.frame or VariableList
     if(is.data.frame(design)) {
-      if(!all(unlist(lapply(design,is.factor)))) stop("design should be a data.frame with factors")
+      if(!all(unlist(lapply(design,is.factor)))) stop("factors should be a data.frame with factors")
       tdesign <- design
     } else if(is(design,"VariableList")) {
       if(!all(unlist(lapply(design,isMetric)) == FALSE)) stop("design should be a VariableList with Nominal or Ordinal variables")
@@ -21,18 +22,18 @@ GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=fa
       tcovariates <- covariates
     } else if(is(covariates,"VariableList")) {
       if(!all(unlist(lapply(covariates,isMetric)) == TRUE)) stop("covariates should be a VariableList with Interval or Ratio variables")
-      cfixed <- unlist(lapply(covariates,isFixed))
+      cfixed <- !unlist(lapply(covariates,isRandom))
       if(!all(cfixed == TRUE)) {
         # check that we have models for the non-fixed covariates
-        if(length(covariateModels) != sum(cfixed)) stop("need to supply Models for all random covariates")
+        if(length(covariateModels) != sum(!cfixed)) stop("need to supply Models for all random covariates")
       }
       tcovariates <- getData(covariates)
       #colnames(tdesign) <- names(design)
     } else {
       stop("covariates should be a data.frame or VariableList")
     }
-    if(nrow(tcovariates) != nrow(tdesign)) {
-      tcovariates <- as.data.frame(lapply(tcovariates,rep,length=nrow(tdesign)))
+    if(nrow(tcovariates) != sum(N)) {
+      tcovariates <- as.data.frame(lapply(tcovariates,rep,length=sum(N)))
     }
     
     # DV can be a list or (metric) Variable
@@ -74,11 +75,16 @@ GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=fa
     if(npar > 3) tau <- matchArg(tau,nCells,"tau")
     
     if(!is.matrix(beta)) {
-      if(length(beta)!=length(covariates)) stop("beta should have length=length(covariates)")
-      beta <- matrix(beta,nrow=length(N),ncol=ncol(tcovariates),byrow=TRUE)
+      if(length(covariates) == 1) {
+        if(length(beta) > 1 & length(beta)!=nCells) stop("beta should have length ",nCells)
+        beta <- matrix(beta,nrow=nCells,ncol=1)
+      } else {
+        if(length(beta)!=length(covariates)) stop("beta should have length=length(covariates)")
+        beta <- matrix(beta,nrow=nCells,ncol=ncol(tcovariates),byrow=TRUE)
+      }
     } else {
       if(ncol(beta)!=length(covariates)) stop("beta should have ncol=length(covariates)")
-      if(nrow(beta)!=length(N)) {
+      if(nrow(beta)!=nCells) {
         beta <- apply(beta,2,matchArg,nCells=nCells,name="mu")
       }
     }
@@ -102,7 +108,7 @@ GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=fa
           IVs[[i]]@.Data <- designMatrix[,i]@.Data
       }
     }
-    fixed <- new("VariableList",IVs)
+    fixed <- VariableList(IVs)
     
     ncIV <- NCOL(tcovariates)
     if(is.data.frame(covariates)) {
@@ -113,7 +119,7 @@ GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=fa
             name = colnames(tcovariates)[i]
           )
       }
-      fixed <- variableList(c(fixed,cIVs))
+      fixed <- VariableList(c(fixed,cIVs))
     } else {
       cIVs <- covariates
       random <- list()
@@ -121,11 +127,12 @@ GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=fa
           cIVs[[i]]@.Data <- tcovariates[,i]@.Data
       }
       if(cfixed[i]) {
-        fixed <- variableList(c(fixed,list(cIVs[[i]])))
+        fixed <- VariableList(c(fixed,list(cIVs[[i]])))
       } else {
-        random <- variableList(c(random,list(cIVs[[i]])))
+        random <- VariableList(c(random,list(cIVs[[i]])))
       }
     }
+    covariate.names <- colnames(tcovariates)
     
     if(!is(DV,"Variable")) {
       DVs <- new("RandomIntervalVariable",
@@ -153,10 +160,13 @@ GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=fa
       }
     }
     
-    tmu <- tmu - rowSums(beta*tcovariates)
+    tmu <- tmu - rowSums(tbeta*tcovariates)
     dat[,names(DVs)] <- family$mu.linkfun(tmu)
     mmod <- lm(mFormula,data=dat)
-    mcoeff <- coefficients(mmod)
+    tmcoeff <- coefficients(mmod)
+    
+    # now plug in the covariates
+    mFormula <- as.formula(paste(names(DVs),"~",paste(factor.names,collapse="*"),"+",paste(covariate.names,collapse="+")))
     
     if(npar > 1) {
       if(length(unique(sigma))!=1) {
@@ -225,12 +235,13 @@ GLM <- function(factors=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=fa
    if(npar > 3) mod@tau  <- new("ParModel",formula=tFormula,coefficients=tcoeff)
       
    DVs <- simulateFromModel(DVs,model=mod,data=dat)
-    
-   structure <- matrix(0,ncol=(length(fixed) + length(random) + length(DVs)),nrow=(length(fixed) + length(random) + length(DVs)))
+   
+   # TODO: allow more than 1 DV?
+   structure <- matrix(0,ncol=(length(fixed) + length(random) + 1),nrow=(length(fixed) + length(random) + 1))
    structure[-nrow(structure),ncol(structure)] <- 1
     
-    sdmod <- new("ANOVA",
-      variables=VariableList(c(IVs,list(DVs))),
+    sdmod <- new("GLM",
+      variables=VariableList(c(IVs,cIVs,list(DVs))),
       models=ModelList(c(covariateModels,list(mod))),
       modelID=c(rep(0,length(fixed)),seq(1,length(random)),1+length(random)),
       structure=structure
