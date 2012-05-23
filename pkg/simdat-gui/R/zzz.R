@@ -32,7 +32,7 @@
 
 .assign.classnames <- function() {
 	##de <- as.environment(match("package:simdat.gui", search()))
-	SimDatMain <<- J("simdat.SimDat")
+	##SimDatMain <<- J("simdat.SimDat")
 
 	#assign("SimpleRDialog", J("org.rosuda.deducer.widgets.SimpleRDialog") , de)
 	#assign("SimpleRSubDialog", J("org.rosuda.deducer.widgets.SimpleRSubDialog") , de)
