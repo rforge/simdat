@@ -128,13 +128,16 @@ setMethod("variables",signature(object="SimDatModel",names="ANY"),
 
 setMethod("variables",signature(object="SimDatModel",names="character"),
   function(object,names,...) {
-    variables(object@variables)   
+    variables(object@variables,names)
   }
 )
 
 setReplaceMethod("variables","SimDatModel",
   function(object,value) {
-    variables(object@variables) <- value
+    varList <- variables(object)
+    variables(varList) <- value
+    object@variables <- varList
+    object
   }
 )
 
