@@ -49,13 +49,15 @@
 \alias{labels,Variable-method}
 \alias{names<-,Variable-method}
 \alias{names,Variable-method}
-%\alias{simulateFromModel,Variable,GamlssModel-method}
-\alias{simulateFromModel,Variable,MixedParModel-method}
-\alias{simulateFromModel,Variable,MvnormModel-method}
-\alias{simulateFromModel,Variable,UniformModel-method}
+\alias{simulateFromModel,RandomVariable,GamlssModel-method}
+\alias{simulateFromModel,RandomVariable,MixedParModel-method}
+\alias{simulateFromModel,RandomVariable,MvnormModel-method}
+\alias{simulateFromModel,RandomVariable,NormalModel-method}
+\alias{simulateFromModel,RandomVariable,UniformModel-method}
 
-\alias{simulate,Variable-method}
+\alias{simulate,RandomVariable-method}
 \alias{Summary,Variable-method}
+
 \alias{VariableList-class}
 \alias{VariableList}
 \alias{getData,VariableList-method}
@@ -70,6 +72,11 @@
 \alias{max<-,RandomIntervalVariable-method}
 \alias{min<-,RandomIntervalVariable-method}
   
+\alias{variableNames,VariableList-method}
+\alias{variables,VariableList,ANY-method}
+\alias{variables,VariableList,character-method}
+\alias{variables<-,VariableList-method}
+
 \title{Class \code{"Variable"}}
 \description{
 The Variable class is the base class for fixed and random variables in SimDat. There are four basic types of variables: nominal, ordinal, interval, and ratio variables. These can be fixed or random.

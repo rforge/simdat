@@ -33,3 +33,25 @@ topOrderGraph <- function(graph) {
 isDAG <- function(graph) {
     !is.null(topOrderGraph(graph))
 }
+
+# adapted from package sm
+simdat.options <- function (...) {
+    if (nargs() == 0) return(.simdat.Options)
+    current <- .simdat.Options
+    temp <- list(...)
+    if (length(temp) == 1 && is.null(names(temp))) {
+        arg <- temp[[1]]
+        switch(mode(arg),
+               list = temp <- arg,
+               character = return(.simdat.Options[arg]),
+               stop("invalid argument: ", sQuote(arg)))
+    }
+    if (length(temp) == 0) return(current)
+    n <- names(temp)
+    if (is.null(n)) stop("options must be given by name")
+    changed <- current[n]
+    current[n] <- temp
+    if (sys.parent() == 0) env <- asNamespace("simdat.base") else env <- parent.frame()
+    assign(".simdat.Options", current, envir = env)
+    invisible(current)
+}

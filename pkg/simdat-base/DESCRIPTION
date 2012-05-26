@@ -1,5 +1,5 @@
 Package: simdat.base
-Version: 0.1-0
+Version: 0.1-1
 Date: 2012-04-25
 Title: Simulating data in R
 Author: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
@@ -8,7 +8,7 @@ Depends: R (>= 2.12.0), methods, gamlss.dist, gamlss.tr, mvtnorm
 Description: simdat offers a flexible (S4) framework to simulate realistic data 
   from various designs and distributions. The resulting data sets can be used
   for purposes of e.g. in statistics teaching.
-Collate: allGenerics.R Variable.R Model.R SimDatModel.R ANOVA.R
-  repeatedMeasuresANOVA.R GLM.R utilities.R
+Collate: allGenerics.R Variable.R Model.R SimDatModel.R GLMcreate.R ANOVA.R
+  repeatedMeasuresANOVA.R GLM.R Regression.R utilities.R zzz.R
 License: GPL (>=2)
-URL: http://simdat.r-forge.r-project.org/
+URL: http://www.ucl.ac.uk/simdat/

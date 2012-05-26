@@ -2,6 +2,7 @@
 source("~/Documents/RForge/simdat/sourcing.R")
 
 tmp <- ANOVA()
+tmp2 <- GLM()
 
 facList <- variables(tmp,c("A","B"))
 depList <- variables(tmp,"Y")

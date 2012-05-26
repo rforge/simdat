@@ -3,6 +3,10 @@ import(methods)
 export(
   ANOVA,
   rmANOVA,
+  GLM,
+  Regression,
+  UniformModel,
+  NormalModel,
   NominalVariable,
   RandomNominalVariable,
   OrdinalVariable,
@@ -11,7 +15,8 @@ export(
   RandomIntervalVariable,
   RatioVariable,
   RandomRatioVariable,
-  VariableList
+  VariableList,
+  ModelList
 )
 
 exportClasses(
@@ -32,8 +37,13 @@ exportClasses(
   RandomParModel,
   MixedParModel,
   GamlssModel,
+  NormalModel,
+  UniformModel,
   SimDatModel,
-  rmANOVA
+  ANOVA,
+  rmANOVA,
+  GLM,
+  Regression
 )
 
 exportMethods(

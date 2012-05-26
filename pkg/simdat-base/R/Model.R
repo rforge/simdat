@@ -399,7 +399,7 @@ setClass("NormalModel",
     )
 )
 
-NormalModel <- function(mean,sd) {
+NormalModel <- function(mean=0,sd=1) {
   new("NormalModel",
     mean=mean,
     sd=sd)

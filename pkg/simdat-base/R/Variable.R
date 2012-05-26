@@ -325,7 +325,7 @@ setReplaceMethod("names","VariableList",
 #  function(x) labels(x@scale)
 #)
 
-setMethod("simulate",signature(object="Variable"),
+setMethod("simulate",signature(object="RandomVariable"),
   function(object,nsim=1,seed,model,...) {
     call <- match.call()
     args <- as.list(call[2:length(call)])
@@ -375,6 +375,8 @@ setMethod("getData","VariableList",
             colnames(dat) <- names(object)
             for(i in 1:length(dat)) {
                 dat[,i] <- asS3(dat[,i])
+                # TODO: why is this necessary?
+                attr(dat[,i],"name") <- names(object)[i]
             }
         } else {
             dat <- data.frame()
