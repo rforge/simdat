@@ -67,15 +67,19 @@ setMethod("makeSimDatModel","AnovaWizardModel",
         
         N <- df[,"N"]
         
-        means <- df[,"mu"]
+        mu <- df[,"mu"]
         
-        sds <- df[,"sigma"]
+        sigma <- df[,"sigma"]
+        
+        nu <- df[,"nu"]
+        
+        tau <- df[,"tau"]
         
         DV <- object@dependent
         
         family <- object@family
         
-        out <- ANOVA(design=factor,N=N,means=means,sds=sds,DV=DV,family=family)
+        out <- ANOVA(design=factor,N=N,mu=mu,sigma=sigma,nu=nu,tau=tau,DV=DV,family=family)
         
         return(out)
     }
@@ -192,4 +196,108 @@ setMethod("makeSimDatModel","RmAnovaWizardModel",
     }
 )
 
+setClass("GlmWizardModel",
+  contains="WizardModel",
+  representation(
+    dependent="Variable",
+    factor="VariableList",
+    numeric="VariableList",
+    family="gamlss.family")
+)
+
+GlmWizardModel <- function(dep,fac,num,fam) {
+    if(!is(dep,"Variable")) stop("dependent needs to be a Variable")
+    if(!is(fac,"VariableList")) stop("factor needs to be a VariableList")
+    if(!is(num,"VariableList")) stop("numeric needs to be a VariableList")
+    if(!is(fam,"gamlss.family")) stop("family needs to be a gamlss.family")
+    out <- new("GlmWizardModel",
+        dependent = dep,
+        factor = fac,
+        numeric=num,
+        family = fam)
+    return(out)
+}
+
+setMethod("getWizardDf","GlmWizardModel", 
+  function(object,which=c("between","nummodel")) {
+      which=match.arg(which)
+      nopar <- object@family$nopar
+      if(which == "between") {
+        dat <- getData(object@factor)
+        if(NROW(dat) < 1 || NCOL(dat) < 1) {
+          dat <- data.frame(NA)
+        }
+        # need to get unique rows in dat
+        dat <- unique(dat)
+        dat[,"N"] <- as.integer(rep(10,nrow(dat)))
+        if(nopar > 0) {
+          dat[,"mu"] <- 0
+        }
+        if(nopar > 1) {
+          dat[,"sigma"] <- 1
+        }
+        if(nopar > 2) {
+          dat[,"nu"] <- 0
+        }
+        if(nopar > 3) {
+          dat[,"tau"] <- 0
+        }
+        numnames <- names(object@numeric)
+        numnames <- numnames[nchar(names) > 0]
+        if(length(numnames) > 0) {
+          for(i in 1:length(numnames)) {
+            dat[,paste("beta.",numnames[i],sep="")] <- 0
+          }
+        }
+        return(dat)
+      }
+      if(which=="nummodel") {
+        numnames <- names(object@numeric)
+        numnames <- numnames[nchar(names) > 0]
+        if(length(numnames) > 0) {
+          dat <- data.frame(name=numnames)
+          dat[,"model"] <- factor(rep(1,nrow(dat)),labels=c("UniformModel","NormalModel"))
+          dat[,"mean"] <- 0
+          dat[,"sd"] <- 1
+          return(dat)
+        } else {
+          return(data.frame())
+        }
+        
+      }
+  }
+)
+
+setMethod("makeSimDatModel","GlmWizardModel",
+    function(object,df,...) {
+        
+        factor <- object@factor
+        numeric <- object@numeric
+        for(i in 1:length(factor)) {
+            factor[[i]]@.Data <- df[,names(factor)[i]]@.Data
+        }
+        
+        family <- object@family
+        
+        N <- df[,"N"]
+        
+        mu <- df[,"mu"]
+        
+        sigma <- df[,"sigma"]
+        
+        nu <- df[,"nu"]
+        
+        tau <- df[,"tau"]
+        
+        beta <- df[,agrep("beta.",colnames(df))]
+        
+        DV <- object@dependent
+        
+        family <- object@family
+        
+        out <- GLM(factors=factor,covariates=numeric,N=N,means=means,sds=sds,DV=DV,family=family)
+        
+        return(out)
+    }
+)
 
