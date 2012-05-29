@@ -1,6 +1,6 @@
 Package: simdat.base
-Version: 0.1-1
-Date: 2012-04-25
+Version: 0.1-2
+Date: 2012-05-30
 Title: Simulating data in R
 Author: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
 Maintainer: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
@@ -9,6 +9,6 @@ Description: simdat offers a flexible (S4) framework to simulate realistic data
   from various designs and distributions. The resulting data sets can be used
   for purposes of e.g. in statistics teaching.
 Collate: allGenerics.R Variable.R Model.R SimDatModel.R GLMcreate.R ANOVA.R
-  repeatedMeasuresANOVA.R GLM.R Regression.R utilities.R zzz.R
+  repeatedMeasuresANOVA.R GLM.R Regression.R uniform.R utilities.R zzz.R
 License: GPL (>=2)
 URL: http://www.ucl.ac.uk/simdat/
