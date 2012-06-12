@@ -2,6 +2,6 @@ package simdat.main;
 
 public interface SimDatMainTabFactory {
 
-	public DataViewerTab makeViewerTab(String dataName);
+	public SimDatMainTab makeViewerTab(String modelName);
 	
 }

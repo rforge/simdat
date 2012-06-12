@@ -111,7 +111,7 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     #means <- matchArg(means[,1],nCells,"means")
     if(npar>1) {
       bsigma <- matchArg(bsigma,nCellsB,"bsigma")
-      wsigma <- matchArg(wsigma,nCellsW,"bsigma")
+      wsigma <- matchArg(wsigma,nCellsW,"wsigma")
     }
     
     if(npar>2) {

@@ -25,7 +25,7 @@ setGeneric("min<-",function(object,value) standardGeneric("min<-"))
 setGeneric("max<-",function(object,value) standardGeneric("max<-"))
 setGeneric("digits<-",function(object,value) standardGeneric("digits<-"))
 
-setGeneric("models",function(object,...) standardGeneric("models"))
+setGeneric("models",function(object,names,...) standardGeneric("models"))
 setGeneric("models<-",function(object,value) standardGeneric("models<-"))
 
 setGeneric("variables",function(object,names,...) standardGeneric("variables"))

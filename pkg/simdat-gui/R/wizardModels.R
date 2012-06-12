@@ -58,28 +58,36 @@ setMethod("getWizardDf","AnovaWizardModel",
 setMethod("makeSimDatModel","AnovaWizardModel",
     function(object,df,...) {
         
-        factor <- object@factor
+        args <- list()
+        
+        factor  <- object@factor
         for(i in 1:length(factor)) {
             factor[[i]]@.Data <- df[,names(factor)[i]]@.Data
         }
         
-        family <- object@family
-        
-        N <- df[,"N"]
-        
-        mu <- df[,"mu"]
-        
-        sigma <- df[,"sigma"]
-        
-        nu <- df[,"nu"]
-        
-        tau <- df[,"tau"]
-        
-        DV <- object@dependent
+        args[["design"]] <- factor
         
         family <- object@family
         
-        out <- ANOVA(design=factor,N=N,mu=mu,sigma=sigma,nu=nu,tau=tau,DV=DV,family=family)
+        args[["family"]] <- family
+        
+        args[["N"]] <- df[,"N"]
+        
+        if(family$nopar > 0) args[["mu"]] <- df[,"mu"]
+        
+        if(family$nopar > 1) args[["sigma"]] <- df[,"sigma"]
+        
+        if(family$nopar > 2) args[["nu"]] <- df[,"nu"]
+        
+        if(family$nopar > 3) args[["tau"]] <- df[,"tau"]
+        
+        args[["DV"]] <- object@dependent
+        
+        #family <- object@family
+        
+        out <- do.call("ANOVA",args=args)
+        
+        #(design=factor,N=N,mu=mu,sigma=sigma,nu=nu,tau=tau,DV=DV,family=family)
         
         return(out)
     }
@@ -162,10 +170,14 @@ setMethod("getWizardDf","RmAnovaWizardModel",
 setMethod("makeSimDatModel","RmAnovaWizardModel",
     function(object,bdf,wdf,...) {
         
+        args <- list()
+        
         between <- object@bdesign
         for(i in 1:length(between)) {
             between[[i]]@.Data <- bdf[,names(between)[i]]@.Data
         }
+        
+        args[["between"]] <- between
         
         within <- object@wdesign
         twithin <- unique(getData(within))
@@ -173,24 +185,59 @@ setMethod("makeSimDatModel","RmAnovaWizardModel",
             within[[i]]@.Data <- twithin[,names(within)[i]]@.Data
         }
         
+        args[["within"]] <- within
+        
         family <- object@family
         
-        N <- bdf[,"N"]
+        args[["family"]] <- family
+        args[["N"]] <- bdf[,"N"]
         
         wdat <- getData(within)
         wnames <- apply(wdat,1,function(x) paste(x,collapse="."))
       
-        means <- bdf[,paste("mu",wnames,sep=".")]
+        if(family$nopar > 0) {
+          mu <- bdf[,paste("mu",wnames,sep=".")]
+          args[["mu"]] <- mu
+          print(mu)
+        }
         
-        bsds <- bdf[,"sigma.between"]
+        if(family$nopar > 1) {
+          args[["bsigma"]] <- bdf[,"sigma.between"]
+          args[["wsigma"]] <- wdf["sigma",]
+        }
         
-        wsds <- wdf[1,]
+        if(family$nopar > 2) {
+          bnu <- bdf[,"nu.between"]
+          wnu <- wdf["nu",]
+          nu <- matrix(bnu,nrow=length(bnu),ncol=length(wnu))
+          
+          #print(nu)
+          
+          #print(wnu)
+          
+          nu <- t(t(nu) + as.numeric(wnu))
+          
+          #print(nu)
+          
+          args[["nu"]] <- nu
+        }
         
-        DV <- object@dependent
+        if(family$nopar > 3) {
+          btau <- bdf[,"tau.between"]
+          wtau <- wdf["tau",]
+          tau <- matrix(btau,nrow=length(btau),ncol=length(wtau))
+          tau <- t(t(tau) + as.numeric(wtau))
+          args[["tau"]] <- tau
+        }
         
-        family <- object@family
+        #wsds <- wdf["sigma",]
         
-        out <- rmANOVA(between=between,within=within,N=N,means=means,bsds=bsds,wsds=wsds,DV=DV,family=family,id.name=object@ID.name,display.direction="wide")
+        args[["DV"]] <- object@dependent
+        
+        #family <- object@family
+        
+        out <- do.call("rmANOVA",args=args)
+        #(between=between,within=within,N=N,means=means,bsds=bsds,wsds=wsds,DV=DV,family=family,id.name=object@ID.name,display.direction="wide")
         
         return(out)
     }
@@ -202,18 +249,24 @@ setClass("GlmWizardModel",
     dependent="Variable",
     factor="VariableList",
     numeric="VariableList",
+    models="ModelList",
     family="gamlss.family")
 )
 
-GlmWizardModel <- function(dep,fac,num,fam) {
+GlmWizardModel <- function(dep,fac=NULL,num=NULL,mod=NULL,fam) {
     if(!is(dep,"Variable")) stop("dependent needs to be a Variable")
-    if(!is(fac,"VariableList")) stop("factor needs to be a VariableList")
-    if(!is(num,"VariableList")) stop("numeric needs to be a VariableList")
+    if(!is.null(fac) & !is(fac,"VariableList")) stop("factor needs to be a VariableList")
+    if(!is.null(num) & !is(num,"VariableList")) stop("numeric needs to be a VariableList")
+    if(!is.null(mod) & !is(mod,"ModelList")) stop("model needs to be a ModelList")
     if(!is(fam,"gamlss.family")) stop("family needs to be a gamlss.family")
+    if(is.null(fac)) fac <- VariableList(list())
+    if(is.null(num)) num <- VariableList(list())
+    if(is.null(mod)) mod <- ModelList(list())
     out <- new("GlmWizardModel",
         dependent = dep,
         factor = fac,
         numeric=num,
+        models=mod,
         family = fam)
     return(out)
 }
@@ -243,7 +296,7 @@ setMethod("getWizardDf","GlmWizardModel",
           dat[,"tau"] <- 0
         }
         numnames <- names(object@numeric)
-        numnames <- numnames[nchar(names) > 0]
+        numnames <- numnames[nchar(numnames) > 0]
         if(length(numnames) > 0) {
           for(i in 1:length(numnames)) {
             dat[,paste("beta.",numnames[i],sep="")] <- 0
@@ -253,12 +306,14 @@ setMethod("getWizardDf","GlmWizardModel",
       }
       if(which=="nummodel") {
         numnames <- names(object@numeric)
-        numnames <- numnames[nchar(names) > 0]
+        numnames <- numnames[nchar(numnames) > 0]
         if(length(numnames) > 0) {
           dat <- data.frame(name=numnames)
-          dat[,"model"] <- factor(rep(1,nrow(dat)),labels=c("UniformModel","NormalModel"))
-          dat[,"mean"] <- 0
-          dat[,"sd"] <- 1
+          dat[,"model"] <- factor(rep("normal",nrow(dat)),levels=unique(.SimDatDistributionNames()))
+          dat[,"mu"] <- 0
+          dat[,"sigma"] <- 1
+          dat[,"nu"] <- 0
+          dat[,"tau"] <- 0
           return(dat)
         } else {
           return(data.frame())

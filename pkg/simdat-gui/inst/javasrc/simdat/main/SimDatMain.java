@@ -1,6 +1,6 @@
-package simdat;
+package simdat.main;
 
-import org.rosuda.deducer.data;
+//import org.rosuda.SimDat.data;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -37,37 +38,43 @@ import org.rosuda.JGR.layout.AnchorLayout;
 import org.rosuda.JGR.robjects.RObject;
 import org.rosuda.JGR.util.ErrorMsg;
 import org.rosuda.REngine.REXP;
-import org.rosuda.deducer.Deducer;
+// import org.rosuda.SimDat.SimDat;
 import org.rosuda.deducer.toolkit.IconButton;
-import org.rosuda.deducer.toolkit.LoadData;
-import org.rosuda.deducer.toolkit.SaveData;
+// import org.rosuda.SimDat.toolkit.LoadData;
+// import org.rosuda.SimDat.toolkit.SaveData;
 import org.rosuda.ibase.Common;
 import org.rosuda.ibase.toolkit.EzMenuSwing;
 import org.rosuda.ibase.toolkit.TJFrame;
+
+import simdat.SimDat;
+import simdat.toolkit.*;
 
 public class SimDatMain extends TJFrame implements ActionListener{
 	private JTabbedPane tabbedPane;
 	private JPanel modelSelectorPanel;
 	private IconButton saveButton;
 	private IconButton openButton;
+        private IconButton simulateButton;
+        private IconButton saveDataButton;
+        private IconButton saveMultipleDataButton;
 	private IconButton removeButton;
-	private JComboBox modelSelector;
+	private ModelList modelSelector;
 	private ArrayList tabs = new ArrayList();
-	private String dataName;
+	private String modelName;
 	
 	public SimDatMain() {
 		super("SimDat", false, TJFrame.clsPackageUtil);
-		try{
+		try {
 			SimDatMainController.init();
 			initGUI();
 			SimDatMainController.addViewerWindow(this);
 			RObject robj = (RObject)modelSelector.getSelectedItem();
-			String data = null;
+			String model = null;
 			if(robj != null)
-				data = robj.getName();
-			dataName = data;
-			reloadTabs(data);
-		}catch(Exception e){
+				model = robj.getName();
+			modelName = model;
+			reloadTabs(model);
+		} catch(Exception e){
 			reloadTabs(null);
 			e.printStackTrace();
 		}
@@ -93,14 +100,22 @@ public class SimDatMain extends TJFrame implements ActionListener{
 				modelSelectorPanel.setPreferredSize(new java.awt.Dimension(839, 52));
 				modelSelectorPanel.setSize(10, 10);
 				modelSelectorPanel.setMinimumSize(new java.awt.Dimension(100, 100));
+                                {
+					simulateButton = new IconButton("/icons/refresh22.png","Simulate",this,"Simulate Model");
+					if(SimDatMainController.showOpenDataButton())
+						modelSelectorPanel.add(simulateButton, new AnchorConstraint(12, 60, 805, 12,
+							AnchorConstraint.ANCHOR_ABS, AnchorConstraint.ANCHOR_NONE,
+							AnchorConstraint.ANCHOR_NONE, AnchorConstraint.ANCHOR_ABS));
+					simulateButton.setPreferredSize(new java.awt.Dimension(22,22));
+				}
 				{
-					saveButton = new IconButton("/icons/kfloppy.png","Save Data",this,"Save Data");
-					if(DataViewerController.showSaveDataButton())
-						modelSelectorPanel.add(saveButton, new AnchorConstraint(12, 60, 805, 62, 
+					saveDataButton = new IconButton("/icons/floppy22.png","Save Data",this,"Export Data");
+					if(SimDatMainController.showSaveDataButton())
+						modelSelectorPanel.add(saveDataButton, new AnchorConstraint(12, 60, 805, 62,
 										AnchorConstraint.ANCHOR_ABS, AnchorConstraint.ANCHOR_NONE, 
 										AnchorConstraint.ANCHOR_NONE, AnchorConstraint.ANCHOR_ABS));
-					saveButton.setFont(new java.awt.Font("Dialog",0,8));
-					saveButton.setPreferredSize(new java.awt.Dimension(32,32));
+					saveDataButton.setFont(new java.awt.Font("Dialog",0,8));
+					saveDataButton.setPreferredSize(new java.awt.Dimension(22,22));
 					
 				
 				}
@@ -131,9 +146,10 @@ public class SimDatMain extends TJFrame implements ActionListener{
 					modelSelectorLabel.setHorizontalAlignment(SwingConstants.CENTER);
 					modelSelectorLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 				}
+                                /*
 				{
-					DataFrameComboBoxModel modelSelectorModel = //new DataFrameComboBoxModel();
-						new DataFrameComboBoxModel(JGR.DATA);
+					ModelComboBoxModel modelSelectorModel = //new DataFrameComboBoxModel();
+						new ModelComboBoxModel(SimDat.MODELS); // TODO: search for models
 					BasicComboBoxRenderer modelSelectorRenderer = new BasicComboBoxRenderer(){
 						public Component getListCellRendererComponent(JList list, Object value, 
 								int index, boolean isSelected, boolean cellHasFocus){
@@ -149,22 +165,23 @@ public class SimDatMain extends TJFrame implements ActionListener{
 					modelSelector.setPreferredSize(new java.awt.Dimension(149, 28));
 					modelSelector.addActionListener(this);
 				}
+                                 *
+                                 */
+                            {
+                                    modelSelector = new ModelList();
+                                    modelSelector.addActionListener(this);
+                                    modelSelectorPanel.add(modelSelector, new AnchorConstraint(432, 594, 906, 415,
+							AnchorConstraint.ANCHOR_REL, AnchorConstraint.ANCHOR_REL,
+							AnchorConstraint.ANCHOR_REL, AnchorConstraint.ANCHOR_REL));
+                            }
 				{
-					openButton = new IconButton("/icons/opendata_24.png","Open Data",this,"Open Data");
-					if(DataViewerController.showOpenDataButton())
-						modelSelectorPanel.add(openButton, new AnchorConstraint(12, 60, 805, 12, 
-							AnchorConstraint.ANCHOR_ABS, AnchorConstraint.ANCHOR_NONE, 
-							AnchorConstraint.ANCHOR_NONE, AnchorConstraint.ANCHOR_ABS));
-					openButton.setPreferredSize(new java.awt.Dimension(32,32));
-				}
-				{
-					removeButton = new IconButton("/icons/trashcan_remove_32.png","Remove from Workspace",
+					removeButton = new IconButton("/icons/trash22.png","Remove from Workspace",
 							this,"Clear Data");
-					if(DataViewerController.showClearDataButton())
+					if(SimDatMainController.showClearDataButton())
 						modelSelectorPanel.add(removeButton, new AnchorConstraint(144, 12, 971, 863, 
 							AnchorConstraint.ANCHOR_NONE, AnchorConstraint.ANCHOR_ABS, 
 							AnchorConstraint.ANCHOR_REL, AnchorConstraint.ANCHOR_NONE));
-					removeButton.setPreferredSize(new java.awt.Dimension(40,40));
+					removeButton.setPreferredSize(new java.awt.Dimension(22,22));
 				}
 			}
 			
@@ -197,8 +214,8 @@ public class SimDatMain extends TJFrame implements ActionListener{
 			tabbedPane.addChangeListener(new ChangeListener(){
 				public void stateChanged(ChangeEvent changeEvent) {
 					Component comp = tabbedPane.getSelectedComponent();
-					if(comp instanceof org.rosuda.deducer.data.DataViewerTab){
-						DataViewerTab dvt = (DataViewerTab) comp;
+					if(comp instanceof simdat.main.SimDatMainTab){
+						SimDatMainTab dvt = (SimDatMainTab) comp;
 						setJMenuBar(dvt.generateMenuBar());
 					}
 				}
@@ -206,7 +223,7 @@ public class SimDatMain extends TJFrame implements ActionListener{
 			
 			this.addWindowListener(new WindowAdapter(){
 				public void windowClosed(WindowEvent arg0) {
-					DataViewerController.removeViewerWindow(DataViewer.this);
+					SimDatMainController.removeViewerWindow(SimDatMain.this);
 					cleanUp();
 				}
 				
@@ -217,49 +234,50 @@ public class SimDatMain extends TJFrame implements ActionListener{
 		}
 	}
 
-	public void reloadTabs(String data){
+	public void reloadTabs(String model){
 		cleanUp();
-		if(data==null){
-			dataName=null;
-			JPanel p = DataViewerController.getDefaultPanel();
+		if(model==null){
+			modelName=null;
+			JPanel p = SimDatMainController.getDefaultPanel();
 			tabbedPane.removeAll();
 			tabs.clear();
 			tabbedPane.addTab("Get Started", p);
 			return;
 		}
-		try{
-			dataName=data;
-			String[] tabNames = DataViewerController.getTabNames();
+		try {
+			modelName=model;
+			String[] tabNames = SimDatMainController.getTabNames();
 			tabbedPane.removeAll();
 			tabs.clear();
 			for(int i=0; i<tabNames.length; i++){
-				DataViewerTab t = DataViewerController.generateTab(tabNames[i], data);
+				SimDatMainTab t = SimDatMainController.generateTab(tabNames[i], model);
 				tabs.add(t);
 				tabbedPane.addTab(tabNames[i], t);
 			}
-		}catch(Exception e){
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void setData(String data){
+	public void setModel(String model){
 		if(tabs.size()==0){
-			reloadTabs(data);
+			reloadTabs(model);
 			return;
 		}
-		dataName=data;
+		modelName=model;
 		//System.out.println("Setting data: " +data);
 		for(int i=0; i < tabs.size(); i++){
-			DataViewerTab t = (DataViewerTab) tabs.get(i);
-			t.setData(data);
+			SimDatMainTab t = (SimDatMainTab) tabs.get(i);
+			t.setData(model);
+                        t.refresh();
 		}
 	}
 	
-	public String getData(){return dataName;}
+	public String getModels(){return modelName;}
 
 	public void cleanUp(){
 		for(int i=0; i < tabs.size(); i++){
-			DataViewerTab t = (DataViewerTab) tabs.get(i);
+			SimDatMainTab t = (SimDatMainTab) tabs.get(i);
 			t.cleanUp();
 		}
 	}
@@ -271,31 +289,42 @@ public class SimDatMain extends TJFrame implements ActionListener{
 				String data = ((RObject)modelSelector.getSelectedItem()).getName();
 				if(data == null || data == "")
 					return;
-				if(!data.equals(dataName)){
-					setData(data);
-					Deducer.setRecentData(dataName);
+				if(!data.equals(modelName)){
+					setModel(data);
+					SimDat.setRecentModel(modelName);
 				}
 				
-			}else if(cmd=="Open Data"){
-				new LoadData();	
-			}else if(cmd=="Save Data"){
-				new SaveData(dataName);
-			}else if(cmd=="Clear Data"){
+			} else if(cmd=="Open Model"){
+				new LoadModel();
+			} else if(cmd=="Save Model"){
+				new SaveModel(modelName);
+			} else if(cmd=="Export Data"){
+				new SaveData(modelName);
+			} else if(cmd=="Clear Model"){
 				if(modelSelector.getSelectedItem()==null){
-					JOptionPane.showMessageDialog(this, "Invalid selection: There is no data loaded.");
+					JOptionPane.showMessageDialog(this, "Invalid selection: There is no model loaded.");
 					return;
 				}
-				String data = ((RObject)modelSelector.getSelectedItem()).getName();
-				int confirm = JOptionPane.showConfirmDialog(null, "Remove Data Frame "+
-						data+" from enviornment?\n" +
+				String model = ((RObject)modelSelector.getSelectedItem()).getName();
+				int confirm = JOptionPane.showConfirmDialog(null, "Remove Model "+
+						model+" from enviornment?\n" +
 								"Unsaved changes will be lost.",
-						"Clear Data Frame", JOptionPane.YES_NO_OPTION,
+						"Clear Model", JOptionPane.YES_NO_OPTION,
 						JOptionPane.QUESTION_MESSAGE);
 				if(confirm == JOptionPane.NO_OPTION)
 					return;
-				Deducer.execute("rm("+data + ")");
+				SimDat.execute("rm("+model + ")");
 				RController.refreshObjects();
-			}
+			} else if(cmd=="Simulate Model"){
+                            if(modelSelector.getSelectedItem()==null){
+					JOptionPane.showMessageDialog(this, "Invalid selection: There is no model loaded.");
+					return;
+				}
+				String model = ((RObject)modelSelector.getSelectedItem()).getName();
+                                SimDat.eval(model + " <- simulate(" + model + ")"); // TODO: should be execute
+                                RController.refreshObjects();
+                                reloadTabs(model);
+                        }
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -303,23 +332,25 @@ public class SimDatMain extends TJFrame implements ActionListener{
 
 
 	public void refresh() {
-		((DataFrameComboBoxModel) modelSelector.getModel()).refresh(Deducer.getData());
-		if(((RObject)modelSelector.getSelectedItem()) == null && dataName!=null){
+                modelSelector.refreshModelNames();
+		//((ModelComboBoxModel) modelSelector.getModel()).refresh(SimDat.getModels());
+		//if(((RObject)modelSelector.getSelectedItem()) == null && modelName!=null){
+                if((modelSelector.getSelectedRObject()) == null && modelName!=null){
 			reloadTabs(null);
 			return;
 		}
 		Component t =  tabbedPane.getSelectedComponent();
-		if(t instanceof DataViewerTab)
-			((DataViewerTab)t).refresh();
+		if(t instanceof SimDatMainTab)
+			((SimDatMainTab)t).refresh();
 //		for(int i=0; i < tabs.size(); i++){
-//			DataViewerTab t = (DataViewerTab) tabs.get(i);
+//			SimDatMainTab t = (SimDatMainTab) tabs.get(i);
 //			t.refresh();
 //		}
 	}
 	
 }
 
-class DataFrameComboBoxModel extends DefaultComboBoxModel{
+class ModelComboBoxModel extends DefaultComboBoxModel{
 
 	private Vector items;
 	private int selectedIndex=0;
@@ -333,7 +364,7 @@ class DataFrameComboBoxModel extends DefaultComboBoxModel{
 				return i;
 		return -1;
 	}
-	public int 	getSize() {
+	public int getSize() {
 		return items.size();
 	}
 	
@@ -353,20 +384,20 @@ class DataFrameComboBoxModel extends DefaultComboBoxModel{
 	}
 	
 	
-	public DataFrameComboBoxModel(Vector v){
+	public ModelComboBoxModel(Vector v){
 		items = new Vector(v);
 	}
 	public void refresh(Vector v){
-		String dataName = null;
+		String modelName = null;
 		int prevSize = items.size();
 		if(getSelectedItem()!=null)
-			dataName = ((RObject)getSelectedItem()).getName();	
+			modelName = ((RObject)getSelectedItem()).getName();
 		this.removeAllElements();			
 		items = new Vector(v);
 		selectedIndex=0;			
 		if(items.size()>0){
 			for(int i = 0;i<items.size();i++)
-				if(((RObject)items.elementAt(i)).getName().equals(dataName))
+				if(((RObject)items.elementAt(i)).getName().equals(modelName))
 					selectedIndex =i;
 			this.fireContentsChanged(this,0,prevSize);
 		}
@@ -376,8 +407,8 @@ class DataFrameComboBoxModel extends DefaultComboBoxModel{
 }
 
 class Refresher implements Runnable {
-	final DataViewer viewer;
-	public Refresher(DataViewer v) {
+	final SimDatMain viewer;
+	public Refresher(SimDatMain v) {
 		viewer=v;
 	}
 
@@ -397,3 +428,4 @@ class Refresher implements Runnable {
 		}
 	}
 }
+

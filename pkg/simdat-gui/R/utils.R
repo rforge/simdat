@@ -36,7 +36,7 @@
 .SimDatDistributions <- function() {
   dist <- list(
     "normal" = list(name="NO",parameters=c("mu","sigma")),
-    "normal family" = list(name="NOF",parameters=c("mu","sigma","nu")),
+    #"normal family" = list(name="NOF",parameters=c("mu","sigma","nu")),
     "beta" = list(name = "BE",parameters=c("mu","sigma")),
     "Box-Cox Cole and Green" = list(name="BCCG",parameters=c("mu","sigma","nu")),
     "Box-Cox power exponential" = list(name="BCPE",parameters=c("mu","sigma","nu","tau")),
@@ -65,10 +65,10 @@
     "Pareto 2" = list(name="PARETO2",parameters=c("mu","sigma")),
     "power exponential" = list(name="PE",parameters=c("mu","sigma","nu")),
     "reverse Gumbel" = list(name="RG",parameters=c("mu","sigma")),
-    "skew power exponential type 1" = list(name="SPE1",parameters=c("mu","sigma","nu","tau")),
-    "skew power exponential type 2" = list(name="SPE2",parameters=c("mu","sigma","nu","tau")),
-    "skew power exponential type 3" = list(name="SPE3",parameters=c("mu","sigma","nu","tau")),
-    "skew power exponential type 4" = list(name="SPE4",parameters=c("mu","sigma","nu","tau")),
+    "skew power exponential type 1" = list(name="SEP1",parameters=c("mu","sigma","nu","tau")),
+    "skew power exponential type 2" = list(name="SEP2",parameters=c("mu","sigma","nu","tau")),
+    "skew power exponential type 3" = list(name="SEP3",parameters=c("mu","sigma","nu","tau")),
+    "skew power exponential type 4" = list(name="SEP4",parameters=c("mu","sigma","nu","tau")),
     "sinh-arcsinh original" = list(name="SHASHo",parameters=c("mu","sigma","nu","tau")),
     "sinh-arcsinh original 2" = list(name="SHASHo2",parameters=c("mu","sigma","nu","tau")),
     "sinh-arcsinh" = list(name="SHASH",parameters=c("mu","sigma","nu","tau")),

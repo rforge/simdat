@@ -23,6 +23,7 @@ simdat.gui.env <- new.env()
 
 .jcall(.simdat,,"startNoJGR")
 assign("tmp",ANOVA(),simdat.gui.env)
+assign("tmp2",GLM(),simdat.gui.env)
 #.jcall(.simdat,,"eval","tmp <- ANOVA()")
 .jcall(.simdat,,"refreshModels")
 .jcall(.simdat,,"startViewerAndWait")

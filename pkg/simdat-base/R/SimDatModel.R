@@ -103,9 +103,27 @@ setMethod("getData","SimDatModel",
 )
 
 
-setMethod("models","SimDatModel",
+setMethod("models",signature(object="SimDatModel",names="ANY"),
   function(object,...) {
     object@models
+  }
+)
+
+setMethod("models",signature(object="SimDatModel",names="character"),
+  function(object,names,...) {
+    vnames <- variableNames(object,...)
+    vid <- which(vnames %in% names)
+    vid <- unique(vid)
+    vid <- vid[vid != 0]
+    mlist <- object@models
+    mid <- object@modelID[vid]
+    if(length(vid) == 1) {
+      return(mlist[[mid]])
+    } else if(length(vid) > 1) {
+      return(ModelList(mlist[mid]))
+    } else {
+      return(NULL)
+    }
   }
 )
 

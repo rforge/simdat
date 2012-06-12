@@ -171,7 +171,12 @@ setMethod("predict",signature(object="ParModel"),
         if(!missing(data)) {
             m <- model.matrix(object@formula,...,data=data)
         } else {
-            m <- model.matrix(object@formula,...)
+            if(length(attr(terms(object@formula),"order")) == 0 & attr(terms(object@formula),"response") == 0) {
+              # intercept only model
+              m <- matrix(1,ncol=1,nrow=1)
+            } else {
+              m <- model.matrix(object@formula,...)
+            }
         }
         #TODO: don't know if this is general enough!
         coeff <- object@coefficients
@@ -400,10 +405,27 @@ setClass("NormalModel",
 )
 
 NormalModel <- function(mean=0,sd=1) {
-  new("NormalModel",
-    mean=mean,
-    sd=sd)
+  fam <- NO()
+  new("GamlssModel",
+    mu=new("ParModel",
+      formula=~1,
+      coefficients=fam$mu.linkfun(mean)),
+    sigma=new("ParModel",
+      formula=~1,
+      coefficients=fam$sigma.linkfun(sd)),
+    family=fam)
 }
+
+setClass("GamlssModel",
+    contains="Model",
+    representation(
+        mu="ParModel",
+        sigma="ParModel",
+        nu="ParModel",
+        tau="ParModel",
+        family="gamlss.family"
+    )
+)
 
 setMethod("simulateFromModel",signature(object="RandomVariable",model="NormalModel"),
     function(object,model,nsim=1,seed,...) {
@@ -465,14 +487,22 @@ setValidity("ModelList",
 
 setMethod("mean",signature(x="GamlssModel"),
   function(x,data,...) {
-    mu <- x@family$mu.linkinv(predict(x@mu,data=data))
+    if(!missing(data)) {
+      mu <- x@family$mu.linkinv(predict(x@mu,data=data))
+    } else {
+      mu <- x@family$mu.linkinv(predict(x@mu))
+    }
     return(mu)
   }
 )
 
 setMethod("sd",signature(x="GamlssModel"),
   function(x,data,...) {
-    sigma <- x@family$sigma.linkinv(predict(x@sigma,data=data))
+    if(!missing(data)) {
+      sigma <- x@family$sigma.linkinv(predict(x@sigma,data=data))
+    } else {
+      sigma <- x@family$sigma.linkinv(predict(x@sigma))
+    }
     return(sigma)
   }
 )

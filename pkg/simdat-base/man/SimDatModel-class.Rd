@@ -20,7 +20,8 @@
 \alias{getData,SimDatModel-method}
 \alias{insertRow,SimDatModel-method}
 \alias{models<-,SimDatModel-method}
-\alias{models,SimDatModel-method}
+\alias{models,SimDatModel,ANY-method}
+\alias{models,SimDatModel,character-method}
 \alias{removeRow,SimDatModel-method}
 \alias{replaceModel,SimDatModel-method}
 \alias{replaceVariable,SimDatModel-method}
@@ -58,7 +59,8 @@ Objects can be created by calls of the form \code{new("SimDatModel", ...)}.
     \item{getData}{\code{signature(object = "SimDatModel")}: ... }
     \item{insertRow}{\code{signature(object = "SimDatModel")}: ... }
     \item{models<-}{\code{signature(object = "SimDatModel")}: ... }
-    \item{models}{\code{signature(object = "SimDatModel")}: ... }
+    \item{models}{\code{signature(object = "SimDatModel", names = "ANY")}: ... }
+    \item{models}{\code{signature(object = "SimDatModel", names = "character")}: ... }
     \item{removeRow}{\code{signature(object = "SimDatModel")}: ... }
     \item{replaceModel}{\code{signature(object = "SimDatModel")}: ... }
     \item{replaceVariable}{\code{signature(object = "SimDatModel")}: ... }

@@ -161,7 +161,12 @@ GLM_create <- function(factors=NULL,covariates=NULL,covariateModels=NULL,N=NULL,
           if(cfixed[i]) {
             fixed <- VariableList(c(fixed,list(cIVs[[i]])))
           } else {
-            cIVs[[i]] <- simulateFromModel(cIVs[[i]],covariateModels[[j]])
+            tdat <- getData(fixed)
+            if(!is.null(tdat) & nrow(tdat) > 0) {
+              cIVs[[i]] <- simulateFromModel(cIVs[[i]],covariateModels[[j]],data=tdat)
+            } else {
+              cIVs[[i]] <- simulateFromModel(cIVs[[i]],covariateModels[[j]])
+            }
             random <- VariableList(c(random,list(cIVs[[i]])))
             j <- j+1
           }

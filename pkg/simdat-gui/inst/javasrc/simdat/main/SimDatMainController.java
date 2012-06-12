@@ -1,6 +1,8 @@
-package simdat;
+package simdat.main;
 
-import org.rosuda.deducer.data;
+import simdat.SimDat;
+import simdat.toolkit.*;
+//import org.rosuda.deducer.data;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -51,7 +53,7 @@ public class SimDatMainController {
 			addTabFactory("Data", new DataViewFactory());
 			addTabFactory("Variables", new VariableViewFactory());
 			addTabFactory("Variable Models", new ModelViewFactory());
-			addTabFactory("Model Summary", new ModelSummaryViewFactory());
+			// addTabFactory("Model Summary", new ModelSummaryViewFactory());
 			
 			
 			saveButton=true;
@@ -71,7 +73,7 @@ public class SimDatMainController {
 					}else if(cmd=="New Model"){
 						String inputValue = JOptionPane.showInputDialog("Model Name: ");
 						if(inputValue!=null)
-							SimDat.eval(inputValue.trim()+"<-data.frame(Var1=NA)"); /* TODO */ 
+							SimDat.eval(inputValue.trim()+"<-new(\"SimDatModel\",name=\"" + inputValue.trim()+"\")");
 					} /*else if(cmd=="tutorial"){
 						HelpButton.showInBrowser("http://www.youtube.com/user/MrIanfellows#p/u/5/iZ857h2j6wA");
 					}else if(cmd=="wiki"){
@@ -104,32 +106,32 @@ public class SimDatMainController {
 		}
 	}
 	
-	public static void addViewerWindow(DataViewer v){
+	public static void addViewerWindow(SimDatMain v){
 		dataWindows.add(0, v);
 	}
 	
 	public static ArrayList getViewerWindows(){return dataWindows;}
 	
-	public static void removeViewerWindow(DataViewer v){
+	public static void removeViewerWindow(SimDatMain v){
 		dataWindows.remove(v);
 	}
 	
 	
-	public static void addTabFactory(String name,DataViewerTabFactory t){
+	public static void addTabFactory(String name,SimDatMainTabFactory t){
 		tabFactories.put(name, t);
 		for(int i=0;i<dataWindows.size();i++){
-			DataViewer dv = (DataViewer)dataWindows.get(i);
-			String data = dv.getData();
-			dv.reloadTabs(data);
+			SimDatMain dv = (SimDatMain)dataWindows.get(i);
+			String models = dv.getModels();
+			dv.reloadTabs(models);
 		}
 	}
 	
 	public static void removeTabFactory(String name){
 		tabFactories.remove(name);
 		for(int i=0;i<dataWindows.size();i++){
-			DataViewer dv = (DataViewer)dataWindows.get(i);
-			String data = dv.getData();
-			dv.reloadTabs(data);
+			SimDatMain dv = (SimDatMain)dataWindows.get(i);
+			String models = dv.getModels();
+			dv.reloadTabs(models);
 		}
 	}
 	
@@ -144,10 +146,10 @@ public class SimDatMainController {
 	
 	
 	
-	public static DataViewerTab generateTab(String tabName,String dataName){
-		DataViewerTabFactory factory = (DataViewerTabFactory) tabFactories.get(tabName);
+	public static SimDatMainTab generateTab(String tabName,String dataName){
+		SimDatMainTabFactory factory = (SimDatMainTabFactory) tabFactories.get(tabName);
 		if(factory==null){
-			new ErrorMsg("Unknown DataViewerTabFactory: " + tabName);
+			new ErrorMsg("Unknown SimDatMainTabFactory: " + tabName);
 			return null;
 		}
 		return factory.makeViewerTab(dataName);
