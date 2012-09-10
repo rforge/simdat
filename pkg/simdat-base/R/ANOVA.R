@@ -1,7 +1,15 @@
 setClass("ANOVA",
-  contains="SimDatModel")
+  contains="GLM")
 
 ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),N=c(15,15,15,15),mu=c(0,1,2,3),sigma=c(2,2,2,2),nu=NULL,tau=NULL,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO()) {
+  tmp <- GLM_create(factors=design,N=N,mu=mu,sigma=sigma,nu=nu,tau=tau,beta=beta,DV=DV,family=family)
+  return(as(tmp,"ANOVA"))
+}
+
+
+ANOVA_deprecated <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),N=c(15,15,15,15),mu=c(0,1,2,3),sigma=c(2,2,2,2),nu=NULL,tau=NULL,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO()) {
+
+    #TODO: should use GLM_create!
 
     # design can be a data.frame or VariableList
     if(is.data.frame(design)) {

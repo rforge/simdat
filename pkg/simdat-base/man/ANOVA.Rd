@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \alias{ANOVA}
 \alias{ANOVA-class}
+\alias{summary,ANOVA-method}
 
 \title{ANOVA}
 

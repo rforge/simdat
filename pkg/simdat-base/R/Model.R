@@ -245,6 +245,30 @@ setClass("GamlssModel",
     )
 )
 
+setMethod("summary",signature(object="GamlssModel"),
+    function(object,data,type=c("aov","lm","glm"),SStype=3,...) {
+        type <- match.arg(type)
+        if(length(object@mu@formula) > 2) {
+            if(type=="aov") {
+                if(SStype == 1) {
+                    return(summary(aov(formula=object@mu@formula,data=data,...)))
+                } else {
+                    mod <- lm(formula=object@mu@formula,data=data,...)
+                    return(Anova(mod,type=SStype,singular.ok=TRUE,...))
+                }
+            }
+            if(type=="glm") {
+                return(summary(glm(formula=object@mu@formula,data=data,...)))
+            }
+            if(type=="lm") {
+                return(summary(lm(formula=object@mu@formula,data=data,...)))
+            }
+        } else {
+            return(NULL)
+        }
+    }
+)
+
 setMethod("simulateFromModel",signature(object="RandomVariable",model="MixedParModel"),
   function(object,model,nsim=1,seed,...,data) {
     call <- match.call()
@@ -368,12 +392,14 @@ setMethod("simulateFromModel",signature(object="RandomVariable",model="MvnormMod
     }
 )
 
-setClass("UniformModel",
-    contains = "Model"
-)
+#setClass("UniformModel",
+#    contains = "Model"
+#)
 
 UniformModel <- function() {
-  new("UniformModel")
+  fam <- UN()
+  new("GamlssModel",
+    family=fam)
 }
 
 setMethod("simulateFromModel",signature(object="RandomVariable",model="UniformModel"),
@@ -396,15 +422,15 @@ setMethod("simulateFromModel",signature(object="RandomVariable",model="UniformMo
     }
 )
 
-setClass("NormalModel",
-    contains = "Model",
-    representation(
-      mean="numeric",
-      sd="numeric"
-    )
-)
+#setClass("NormalModel",
+#    contains = "Model",
+#    representation(
+#      mean="numeric",
+#      sd="numeric"
+#    )
+#)
 
-NormalModel <- function(mean=0,sd=1) {
+NormalModel <- function(mean=0.0,sd=1.0) {
   fam <- NO()
   new("GamlssModel",
     mu=new("ParModel",

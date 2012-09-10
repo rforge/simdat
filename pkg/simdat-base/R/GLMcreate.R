@@ -70,7 +70,7 @@ GLM_create <- function(factors=NULL,covariates=NULL,covariateModels=NULL,N=NULL,
       if(is.null(DV$max)) DV$max <- Inf
       if(is.null(DV$digits)) DV$digits=8
       #if(is.null(DV$family)) DV$family <- gamlss.dist::NO()
-      if(length(DV$name) != 1) stop("ANOVA can only have a single dependent variable")
+      if(length(DV$name) != 1) stop("GLM can only have a single dependent variable")
     } else if(is(DV,"Variable")) {
       if(!isMetric(DV)) stop("DV is not a metric Variable")
     } else {
@@ -286,11 +286,15 @@ GLM_create <- function(factors=NULL,covariates=NULL,covariateModels=NULL,N=NULL,
    # TODO: allow more than 1 DV?
    structure <- matrix(0,ncol=(length(fixed) + length(random) + 1),nrow=(length(fixed) + length(random) + 1))
    structure[-nrow(structure),ncol(structure)] <- 1
-    
+     
+   modelID <- c(rep(0,length(fixed)))
+   if(length(random) > 0) modelID <- c(modelID,seq(1,length(random)))
+   modelID <- c(modelID,1+length(random))
+   
     sdmod <- new("GLM",
       variables=VariableList(c(fixed,random,list(DVs))),
       models=ModelList(c(covariateModels,list(mod))),
-      modelID=c(rep(0,length(fixed)),seq(1,length(random)),1+length(random)),
+      modelID=modelID,
       structure=structure
     )
     

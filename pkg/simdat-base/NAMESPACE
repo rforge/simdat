@@ -16,7 +16,8 @@ export(
   RatioVariable,
   RandomRatioVariable,
   VariableList,
-  ModelList
+  ModelList,
+  UN
 )
 
 exportClasses(

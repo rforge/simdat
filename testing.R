@@ -6,12 +6,46 @@ tmp2 <- GLM()
 
 facList <- variables(tmp,c("A","B"))
 numList <- VariableList(list(variables(tmp2,"X")))
+numList[[1]]@.Data <- numeric()
+
 depList <- variables(tmp,"Y")
-modList <- ModelList(list(models(tmp2,"X")))
+#modList <- ModelList(list(models(tmp2,"X")))
 fam <- NO()
-gwm <- GlmWizardModel(dep=depList,fac=facList,num=numList,mod=modList,fam=fam)
+#gwm <- GlmWizardModel(dep=depList,fac=facList,num=numList,mod=modList,fam=fam)
+gwm <- GlmWizardModel(dep=depList,fac=facList,num=numList,fam=fam)
 gmlssdf <- getWizardDf(gwm,which="between")
-getWizardDf(gwm,which="nummodel")
+nummodels <- getWizardDf(gwm,which="nummodel")
+tmp3 <- makeSimDatModel(gwm,gmlssdf,nummodels)
+
+df <-
+structure(list(A = structure(c(1L, 2L, 1L, 2L), .Label = c("A1", 
+"A2"), class = "factor"), B = structure(c(1L, 1L, 2L, 
+3L), .Label = c("B1", "B2"), class = "factor"), N = c(10L, 
+10L, 10L, 10L), mu = c(0, 0, 0, 0), sigma = c(1, 
+1, 1, 1), beta.X = c(0, 0, 0, 0)), row.names = c(NA, 
+4L), .Names = c("A", "B", "N", "mu", "sigma", "beta.X"), class = "data.frame")
+
+num <-
+structure(list(name = structure(1L, .Label = "X", class = "factor"), 
+    model = structure(1L, .Label = c("normal", "beta", "Box-Cox Cole and Green", 
+    "Box-Cox power exponential", "Box-Cox t", "exponential", 
+    "exponential Gaussian", "exponential gen. beta type 2", "gamma", 
+    "generalized beta type 1", "generalized beta type 2", "generalized gamma", 
+    "generalized inverse Gaussian", "generalized t", "Gumbel", 
+    "inverse Gamma", "inverse Gaussian", "Johnson's SU (mu = mean)", 
+    "Johnson's original SU", "logistic", "log normal", "log normal (Box-Cox)", 
+    "NET", "normal family", "Pareto 2 original", "Pareto 2", 
+    "power exponential", "reverse Gumbel", "skew power exponential type 1", 
+    "skew power exponential type 2", "skew power exponential type 3", 
+    "skew power exponential type 4", "sinh-arcsinh original", 
+    "sinh-arcsinh original 2", "sinh-arcsinh", "skew t type 1", 
+    "skew t type 2", "skew t type 3", "skew t type 4", "skew t type 5", 
+    "t Family", "uniform", "Weibull", "Weibull (PH)", "Weibull (mu = mean)"
+    ), class = "factor"), mu = 0, sigma = 1, nu = 0, tau = 0), row.names = c(NA, 
+-1L), .Names = c("name", "model", "mu", "sigma", "nu", "tau"), class = "data.frame")
+
+tmp3 <- makeSimDatModel(gwm,df,num)
+
 
 facList <- variables(tmp,c("A","B"))
 depList <- variables(tmp,"Y")

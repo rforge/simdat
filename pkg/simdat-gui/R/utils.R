@@ -78,7 +78,7 @@
     "skew t type 4" = list(name="ST4",parameters=c("mu","sigma","nu","tau")),
     "skew t type 5" = list(name="ST5",parameters=c("mu","sigma","nu","tau")),
     "t Family" = list(name="TF",parameters=c("mu","sigma","nu")),
-    "uniform" = list(name="U",parameters=character()),
+    "uniform" = list(name="UN",parameters=character()),
     "Weibull" = list(name="WEI",parameters=c("mu","sigma")),
     "Weibull (PH)" = list(name="WEI2",parameters=c("mu","sigma")),
     "Weibull (mu = mean)" = list(name="WEI3",parameters=c("mu","sigma"))

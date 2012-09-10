@@ -273,7 +273,7 @@ GlmWizardModel <- function(dep,fac=NULL,num=NULL,mod=NULL,fam) {
 
 setMethod("getWizardDf","GlmWizardModel", 
   function(object,which=c("between","nummodel")) {
-      which=match.arg(which)
+      which <- match.arg(which)
       nopar <- object@family$nopar
       if(which == "between") {
         dat <- getData(object@factor)
@@ -324,35 +324,74 @@ setMethod("getWizardDf","GlmWizardModel",
 )
 
 setMethod("makeSimDatModel","GlmWizardModel",
-    function(object,df,...) {
+    function(object,df,nummodels,...) {
         
-        factor <- object@factor
+        args <- list()
+        
+        factor  <- object@factor
         numeric <- object@numeric
+        
         for(i in 1:length(factor)) {
             factor[[i]]@.Data <- df[,names(factor)[i]]@.Data
         }
         
-        family <- object@family
+        args[["factors"]] <- factor
         
-        N <- df[,"N"]
-        
-        mu <- df[,"mu"]
-        
-        sigma <- df[,"sigma"]
-        
-        nu <- df[,"nu"]
-        
-        tau <- df[,"tau"]
-        
-        beta <- df[,agrep("beta.",colnames(df))]
-        
-        DV <- object@dependent
+        #args[["covariates"]] <- numeric
         
         family <- object@family
         
-        out <- GLM(factors=factor,covariates=numeric,N=N,means=means,sds=sds,DV=DV,family=family)
+        args[["family"]] <- family
+        
+        args[["N"]] <- df[,"N"]
+        
+        if(family$nopar > 0) args[["mu"]] <- df[,"mu"]
+        
+        if(family$nopar > 1) args[["sigma"]] <- df[,"sigma"]
+        
+        if(family$nopar > 2) args[["nu"]] <- df[,"nu"]
+        
+        if(family$nopar > 3) args[["tau"]] <- df[,"tau"]
+        
+        args[["beta"]] <- as.matrix(df[,agrep("beta.",colnames(df))])
+        
+        args[["DV"]] <- object@dependent
+        
+        #family <- object@family
+        
+        random <- VariableList(numeric[isRandom(numeric)])
+        if(length(random) > 0) {
+            covariateModels <- vector("list",length=length(random))
+            for(i in 1:length(random)) {
+                fam <- .SimDatGetDistributionFromName(nummodels$model[i])
+                mod <- new("GamlssModel",
+                    mu=new("ParModel",formula=~1,coefficients=fam$mu.linkfun(nummodels$mu[i])),
+                    family=fam)
+                if(fam$nopar > 1) mod@sigma  <- new("ParModel",formula=~1,coefficients=fam$sigma.linkfun(nummodels$sigma[i]))
+                if(fam$nopar > 2) mod@nu  <- new("ParModel",formula=~1,fam$nu.linkfun(nummodels$nu[i]))
+                if(fam$nopar > 3) mod@tau  <- new("ParModel",formula=~1,fam$tau.linkfun(nummodels$tau[i]))
+                covariateModels[[i]] <- mod
+                random[[i]]@.Data <- rep(nummodels$mu[i],sum(N))
+            }
+            
+            args[["covariateModels"]] <- covariateModels
+        }
+        
+        
+        # give covariates some good values
+        numeric[isRandom(numeric)] <- random
+        
+        args[["covariates"]] <- numeric
+        
+        out <- do.call("GLM",args=args)
+        
+        #out <- GLM(factors=factor,covariates=numeric,N=N,means=means,sds=sds,DV=DV,family=family)
+        
+        #(design=factor,N=N,mu=mu,sigma=sigma,nu=nu,tau=tau,DV=DV,family=family)
         
         return(out)
     }
 )
+
+
 

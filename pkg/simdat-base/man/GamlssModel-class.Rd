@@ -4,6 +4,7 @@
 \alias{GamlssModel-class}
 \alias{GammlssModel-class}
 \alias{simulate,GamlssModel-method}
+\alias{summary,GamlssModel-method}
 \alias{simulate,GammlssModel-method}
 \alias{simulateFromModel,Variable,GamlssModel-method}
 

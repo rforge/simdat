@@ -1,4 +1,4 @@
-U <- function() {
+UN <- function() {
   fam <- list(
     family=c("U","Uniform"),
     parameters=list(),
