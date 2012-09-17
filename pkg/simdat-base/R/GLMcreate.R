@@ -23,7 +23,8 @@ GLM_create <- function(factors=NULL,covariates=NULL,covariateModels=NULL,N=NULL,
       nfactor <- ncol(tdesign)
       factor.names <- colnames(tdesign)
       nCells <- NROW(tdesign)
-      tdesign <- as.data.frame(lapply(tdesign,rep,length=sum(N)))
+      #tdesign <- as.data.frame(lapply(tdesign,rep,length=sum(N)))
+      tdesign <- as.data.frame(lapply(tdesign,rep,times=N))
     } else {
       nCells <- 1
     }

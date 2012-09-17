@@ -4,6 +4,7 @@ setClass("rmANOVA",
     DVwide="character", # names for within variables in wide format
     DVlong="character", # names for within variables in long format
     wvars="character", # names of within variables in long format
+    wdesign="data.frame",
     direction="character", # display in wide or long format?
     IDvar="character" # name of subject ID variable
   )
@@ -35,7 +36,7 @@ setMethod("getData",
     }
 )
 
-rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,3),labels=c("W1","W2","W3"))),N=rep(10,4),mu=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsigma=c(1,1,1,1),wsigma=c(1,1,1,1),nu=NULL,tau=NULL,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO(),id.name="ID",display.direction=c("wide","long")) {
+rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,2),labels=c("B1","B2"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,2),labels=c("W1","W2"))),N=rep(10,4),mu=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsigma=c(1,1,1,1),wsigma=c(1,1,1,1),nu=NULL,tau=NULL,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO(),id.name="ID",display.direction=c("wide","long")) {
 
     display.direction <- match.arg(display.direction)
 
@@ -292,6 +293,7 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
       DVwide=wnames,
       DVlong=DVs@name,
       wvars=names(within),
+      wdesign=twithin,
       direction=display.direction,
       IDvar = names(IDvar)
     )
@@ -300,3 +302,41 @@ rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),
     
 }
 
+setMethod("summary",signature(object="rmANOVA"),
+    function(object,...,type=c("aov","lm","glm"),SStype=3) {
+        type <- match.arg(type)
+        vars <- variables(object,...)
+        fixed <- VariableList(vars[!isRandom(vars)])
+        fixed <- VariableList(fixed[!variableNames(fixed) == object@IDvar])
+        random <- VariableList(vars[isRandom(vars)])
+        for(i in 1:length(random)) {
+            n <- aggregate(random[i],by=fixed,FUN=length)
+            means <- aggregate(random[i],by=fixed,FUN=mean)
+            vars <- aggregate(random[i],by=fixed,FUN=var)
+            out <- cbind(n,means[,ncol(means)],sqrt(vars[,ncol(vars)]))
+            colnames(out) <- c(variableNames(fixed),"n","mean","sd")
+            cat("Variable ",variableNames(random)[[i]],": \n",sep="")
+            print(out)
+            cat("\n")
+        }
+        models <- ModelList(models(object))
+        for(i in 1:length(models)) {
+            if(i == object@modelID[variableNames(object) == object@DVlong]) {
+                # need a special summary here
+                bfacs <- variableNames(fixed)
+                bfacs <- bfacs[!(bfacs %in% object@wvars)]
+                form <- as.formula(paste("cbind(",paste(object@DVwide,collapse=","),") ~ ",paste(bfacs,collapse="*")))
+                iform <- as.formula(paste("~",paste(object@wvars,collapse="*")))
+                mod <- lm(form,data=getData(object))
+                summary(Anova(mod, idata=object@wdesign, idesign=iform,type=SStype),multivariate=FALSE,singular.ok=TRUE) # already prints
+                #print(summ)
+            } else {
+                summ <- summary(models[[i]],data=getData(object),type=type,SStype=SStype,...)
+                if(!is.null(summ)) {
+                    cat("Variable ",variableNames(object)[which(object@modelID == i)],": \n",sep="")
+                    print(summ)
+                }
+            }
+        }
+    }
+)
