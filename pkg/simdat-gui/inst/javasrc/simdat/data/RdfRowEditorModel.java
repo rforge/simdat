@@ -54,8 +54,8 @@ public class RdfRowEditorModel extends ExDefaultTableModel {
      */
 
     public RdfRowEditorModel(String name, String curEnv) {
-        this.setDataName(name);
         this.curEnv = curEnv;
+        this.setDataName(name);
     }
 
     public String getDataName() {
@@ -64,12 +64,12 @@ public class RdfRowEditorModel extends ExDefaultTableModel {
 
     public void setDataName(String name) {
 
-        boolean envDefined = ((REXPLogical) SimDat.GlobalEval("exists('" + curEnv + "') && is.environment(" + curEnv + ")")).isTRUE()[0];
+        //boolean envDefined = ((REXPLogical) SimDat.GlobalEval("exists('" + curEnv + "') && is.environment(" + curEnv + ")")).isTRUE()[0];
 
-        if (!envDefined) {
+        //if (!envDefined) {
             //SimDat.eval(guiEnv+"<-new.env(parent=emptyenv())");
             //TODO: raise ERROR
-        }
+        //}
         if (tempDataName != null) {
             removeCachedData();
         }

@@ -60,12 +60,16 @@ public class ModelList extends javax.swing.JComboBox implements ActionListener {
 
     public void refreshModelNames() {
         SimDat.refreshModels();
-        String mod = ((RObject) this.getSelectedItem()).getName();
-        this.removeActionListener(this);
-        this.model = new ModelComboBoxModel(SimDat.getModels());
-        for (int i = 0; i < SimDat.getModels().size(); i++) {
-            String modelName = ((RObject) SimDat.getModels().elementAt(i)).getName();
-            this.model.addElement(modelName);
+        //String mod = ((RObject) this.getSelectedItem()).getName();
+        ((ModelComboBoxModel) this.getModel()).refresh(SimDat.getModels());
+        
+        //String mod = SimDat.getRecentModel();
+                
+        //this.removeActionListener(this);
+        //this.model = new ModelComboBoxModel(SimDat.getModels());
+        //for (int i = 0; i < SimDat.getModels().size(); i++) {
+            //String modelName = ((RObject) SimDat.getModels().elementAt(i)).getName();
+            //this.model.addElement(modelName);
             /*
             boolean isValid = true;
             if(!rDataFilter.equals("")){
@@ -77,11 +81,12 @@ public class ModelList extends javax.swing.JComboBox implements ActionListener {
             dataComboBoxModel.addElement(dataName);
              *
              */
-        }
-        if (mod != null) {
-            this.setSelectedItem(mod);
-        }
-        this.addActionListener(this);
+        //}
+        //this.setModel(model);
+        //if (mod != null) {
+        //    this.setSelectedItem(mod);
+        //}
+        //this.addActionListener(this);
         //reset();
     }
 
@@ -93,6 +98,17 @@ public class ModelList extends javax.swing.JComboBox implements ActionListener {
     //}
     public RObject getSelectedRObject() {
         return (RObject) this.getSelectedItem();
+    }
+    
+    public void setSelectedModel(String mod) {
+        int lst = this.model.getSize();
+        for(int i =0; i < lst; i++) {
+            if( ((RObject)this.model.getElementAt(i)).getName() == mod) {
+                this.model.setSelectedItem( this.model.getElementAt(i));
+                SimDat.setRecentModel(mod);
+            }
+        }
+    
     }
 
     //public RObject[] getMultSelection(){

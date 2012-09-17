@@ -70,6 +70,7 @@ public class AnovaWizard extends Wizard {
         }
         
         this.registerWizardPanel(ANOVA2Descriptor.IDENTIFIER, aov2d);
+        
         if(newModel) {
             this.setCurrentPanel(ANOVA0Descriptor.IDENTIFIER);
         } else {

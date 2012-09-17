@@ -173,6 +173,7 @@ public class SpecifyNewGlmDialog extends JPanel {
         SimDat.execute("depList <- VariableList(list())",curEnv);
         SimDat.execute("facList <- VariableList(list())",curEnv);
         SimDat.execute("numList <- VariableList(list())",curEnv);
+        SimDat.execute("modList <- ModelList(list())",curEnv);
     }
 
     public void makeFamily() {

@@ -73,20 +73,24 @@ public class CovariateEditorModel extends ExDefaultTableModel {
         try {
             if (row >= (getRowCount() - numExtraRows)) {
                 return null;
-            } else if (col == 0) {
-                return SimDat.eval(rModelName + "[" + (row + 1) + ",\"name\"]", curEnv).asString();
-            } else if (col == 1) {
-                return SimDat.eval(rModelName + "[" + (row + 1) + ",\"model\"]", curEnv).asString();
-            } else if (col == 2) {
-                return SimDat.eval(rModelName + "[" + (row + 1) + ",\"mu\"]", curEnv).asString();
-            } else if (col == 3) {
-                return SimDat.eval(rModelName + "[" + (row + 1) + ",\"sigma\"]", curEnv).asString();
-            } else if (col == 4) {
-                return SimDat.eval(rModelName + "[" + (row + 1) + ",\"nu\"]", curEnv).asString();
-            } else if (col == 5) {
-                return SimDat.eval(rModelName + "[" + (row + 1) + ",\"tau\"]", curEnv).asString();
             } else {
-                return "";
+                int npar = 0;
+                if (col > 1) npar = (SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asInteger();
+                if (col == 0) {
+                    return SimDat.eval(rModelName + "[" + (row + 1) + ",\"name\"]", curEnv).asString();
+                } else if (col == 1) {
+                    return SimDat.eval(rModelName + "[" + (row + 1) + ",\"model\"]", curEnv).asString();
+                } else if (col == 2 & npar > 0) {
+                    return SimDat.eval(rModelName + "[" + (row + 1) + ",\"mu\"]", curEnv).asString();
+                } else if (col == 3 & npar > 1) {
+                    return SimDat.eval(rModelName + "[" + (row + 1) + ",\"sigma\"]", curEnv).asString();
+                } else if (col == 4 & npar > 2) {
+                    return SimDat.eval(rModelName + "[" + (row + 1) + ",\"nu\"]", curEnv).asString();
+                } else if (col == 5 & npar > 3) {
+                    return SimDat.eval(rModelName + "[" + (row + 1) + ",\"tau\"]", curEnv).asString();
+                } else {
+                    return "";
+                }
             }
         } catch (Exception e) {
             return "?";
@@ -98,52 +102,52 @@ public class CovariateEditorModel extends ExDefaultTableModel {
         } else if (col == 0) {
         } else if (col == 1) {
             //  change distribution
-            SimDat.eval(rModelName + "[row+1,col+1] <- " + value.toString(), curEnv);
+            SimDat.eval(rModelName + "[" + (row + 1) + "," + (col + 1) + "] <- '" + value.toString() + "'", curEnv);
+            this.refresh();
         } else if (col == 2) {
             // change mu
             int npar = 0;
             try {
-                npar = ((REXPInteger) SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asIntegers()[0];
+                npar = (SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asInteger();
             } catch (Exception e) {
             }
-
             if (npar > 0) {
-                SimDat.eval(rModelName + "[row+1,col+1] <- " + value.toString(), curEnv);
+                SimDat.eval(rModelName + "[" + (row + 1) + "," + (col + 1) + "] <- " + value.toString(), curEnv);
 
             }
         } else if (col == 3) {
             // change sigma
             int npar = 0;
             try {
-                npar = ((REXPInteger) SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asIntegers()[0];
+                npar = (SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asInteger();
             } catch (Exception e) {
             }
             if (npar > 1) {
-                SimDat.eval(rModelName + "[row+1,col+1] <- " + value.toString(), curEnv);
+                SimDat.eval(rModelName + "[" + (row + 1) + "," + (col + 1) + "] <- " + value.toString(), curEnv);
 
             }
         } else if (col == 4) {
             // change nu
             int npar = 0;
             try {
-                npar = ((REXPInteger) SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asIntegers()[0];
+                npar = (SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asInteger();
             } catch (Exception e) {
             }
             // change variable type
             if (npar > 2) {
-                SimDat.eval(rModelName + "[row+1,col+1] <- " + value.toString(), curEnv);
+                SimDat.eval(rModelName + "[" + (row + 1) + "," + (col + 1) + "] <- " + value.toString(), curEnv);
 
             }
         } else if (col == 5) {
             // change tau
             int npar = 0;
             try {
-                npar = ((REXPInteger) SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asIntegers()[0];
+                npar = (SimDat.eval(".SimDatGetDistributionFromName(\"" + this.getValueAt(row, 1).toString() + "\")$nopar", curEnv)).asInteger();
             } catch (Exception e) {
             }
             // change variable type
             if (npar > 3) {
-                SimDat.eval(rModelName + "[row+1,col+1] <- " + value.toString(), curEnv);
+                SimDat.eval(rModelName + "[" + (row + 1) + "," + (col + 1) + "] <- " + value.toString(), curEnv);
 
             }
         }

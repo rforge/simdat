@@ -749,7 +749,11 @@ public class SimDat {
                 for (int i = 0; i < data.length; i++) {
                     boolean b = (data[i].equals("null") || data[i].trim().length() == 0);
                     String name = b ? a + "" : data[i];
-                    MODELS.add(RController.createRObject(name, "SimDatModel", null, (!b)));
+                    String t = "";
+                    if (b == false)
+                           t = (SimDat.eval("is(" + data[i] + ")")).asStrings()[0]; // TODO: set back to idleEval
+                    
+                    MODELS.add(RController.createRObject(name, t, null, (!b)));
                     a++;
                 }
 

@@ -18,14 +18,14 @@ import org.rosuda.REngine.REXPLogical;
  *
  * @author maarten
  */
-public class GlmWizard extends Wizard {
+public class RegressionWizard extends Wizard {
 
-    private String subEnv = "GlmWizardEnv";
+    private String subEnv = "RegressionWizardEnv";
     private String baseEnv = SimDat.guiEnv;
     private String curEnv = baseEnv + "$" + subEnv;
     private String rModelName;
     private String rGlmWizMod = "myGlmWizardModel";
-    private String rGlmGamlssDf = "myGamlssDf";
+    private String rGlmGamlssDf = "myGlmGamlssDf";
     private String rNumModelDf = "myNumModelDf";
     private SpecifyNewGlmDialog glm0;
     private WizardPanelDescriptor glm0d;
@@ -37,35 +37,43 @@ public class GlmWizard extends Wizard {
     private WizardPanelDescriptor glm3d;
     private Boolean newModel;
 
-    public GlmWizard(String ModelName, boolean NewModel) {
+    public RegressionWizard(String ModelName, boolean NewModel) {
 
         super();
+        
+        newModel = NewModel;
 
         this.rModelName = ModelName;
-        this.newModel = NewModel;
 
         if (((REXPLogical) SimDat.eval("!exists('" + subEnv + "') || !is.environment(" + subEnv + ")", baseEnv)).isTRUE()[0]) {
             SimDat.eval(subEnv + "<- new.env()", baseEnv);
         }
 
         if (newModel) {
-            glm0 = new SpecifyNewGlmDialog(true, true, true, true, curEnv);
-            glm0d = new GlmWizard.GLM0Descriptor();
+            glm0 = new SpecifyNewGlmDialog(true, false, true, true, curEnv);
+            glm0d = new RegressionWizard.GLM0Descriptor();
         } else {
             // make copy of model into current environment
             SimDat.eval(subEnv + "$" + rModelName + "<-" + rModelName, baseEnv);
 
-            glm1 = new GLMDialog(true, true, true, rModelName, curEnv);
-            glm1d = new GlmWizard.GLM1Descriptor();
+            glm1 = new GLMDialog(false, true, true, rModelName, curEnv);
+            glm1d = new RegressionWizard.GLM1Descriptor();
         }
 
         glm2 = new CovariateEditor(rNumModelDf, curEnv);
-        glm2d = new GlmWizard.GLM2Descriptor();
+        glm2d = new RegressionWizard.GLM2Descriptor();
 
+        //glm1 = new GLMDialog(true,true,true,newModel);
+        //glm1 = new GLMDialog(true,true,true,rModelName,curEnv);
+        //glm1d = new GlmWizard.GLM1Descriptor();
         glm3 = new GamlssModelDialog(rGlmGamlssDf, curEnv);
-        glm3d = new GlmWizard.GLM3Descriptor();
+        glm3d = new RegressionWizard.GLM3Descriptor();
 
         this.getDialog().setTitle("General Linear Model");
+
+        //this.registerWizardPanel(GLM1Descriptor.IDENTIFIER, glm1d);
+        //this.registerWizardPanel(GLM2Descriptor.IDENTIFIER, glm2d);
+        //this.setCurrentPanel(GLM1Descriptor.IDENTIFIER);
 
         if (newModel) {
             this.registerWizardPanel(GLM0Descriptor.IDENTIFIER, glm0d);
@@ -122,20 +130,13 @@ public class GlmWizard extends Wizard {
         }
 
         public Object getNextPanelDescriptor() {
-
-            if (glm0.hasNumeric()) {
-                return GLM2Descriptor.IDENTIFIER;
-            } else {
-                return GLM3Descriptor.IDENTIFIER;
-
-            }
+            return GLM2Descriptor.IDENTIFIER;
             //return ANOVA2Descriptor.IDENTIFIER;
         }
 
         public void aboutToHidePanel() {
             //boolean ok = aov1.MakeRdf(this.IDENTIFIER);
             glm0.makeFamily();
-            SimDat.eval("facList <- makeFactorialDesign(facList)", curEnv);
             makeGlmWizModel();
             makeGamlssDf();
 
@@ -171,23 +172,6 @@ public class GlmWizard extends Wizard {
         }
 
         public void aboutToHidePanel() {
-            // make the Rdf
-            //String name = SimDat.guiEnv + "$" + this.IDENTIFIER;
-            //boolean ok = aov1.MakeRdf(SimDat.guiEnv + "$" + this.IDENTIFIER);
-            //boolean ok = glm1.MakeRdf(this.IDENTIFIER);
-            /*
-            RList data = null;
-            try {
-            data = SimDat.eval(SimDat.guiEnv + "$" + ANOVA1Descriptor.IDENTIFIER).asList();
-            } catch (REXPMismatchException e) {
-            new ErrorMsg(e);
-            }
-             *
-             */
-            //if(ok) {
-            //    aov2.setData(name);
-            //    aov2.refresh();
-            //}
             boolean ok = glm1.MakeVarLists(true, false, false, true);
             if (ok) {
                 makeGlmWizModel();
@@ -259,19 +243,19 @@ public class GlmWizard extends Wizard {
                 }
             }
         }
+    }
 
-        public void aboutToDisplayPanel() {
-            //aov2.setData(SimDat.guiEnv + "$" + ANOVA1Descriptor.IDENTIFIER);
-            //glm2.setData(GLM1Descriptor.IDENTIFIER);
-            //glm2.refresh();
-            glm3.setData(rGlmGamlssDf, curEnv);
-            glm3.refresh();
-        }
+    public void aboutToDisplayPanel() {
+        //aov2.setData(SimDat.guiEnv + "$" + ANOVA1Descriptor.IDENTIFIER);
+        //glm2.setData(GLM1Descriptor.IDENTIFIER);
+        //glm2.refresh();
+        glm3.setData(rGlmGamlssDf, curEnv);
+        glm3.refresh();
+    }
 
-        public void aboutToHidePanel() {
-            // make the model
-            //glm2.MakeModel(glm1.getModelName(),true);
-            //glm3.MakeModel();
-        }
+    public void aboutToHidePanel() {
+        // make the model
+        //glm2.MakeModel(glm1.getModelName(),true);
     }
 }
+

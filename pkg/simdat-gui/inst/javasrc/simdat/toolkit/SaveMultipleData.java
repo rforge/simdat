@@ -43,7 +43,7 @@ public class SaveMultipleData {
 
         JFileChooser chooser = null;
         FileFilter extFilter = null;
-        FileSelector fileDialog = new FileSelector(null, "Save Data", FileSelector.SAVE);
+        FileSelector fileDialog = new FileSelector(null, "Save Multiple Data", FileSelector.SAVE);
         fileDialog.addFooterPanel(fpanel);
         if (fileDialog.isSwing()) {
             chooser = fileDialog.getJFileChooser();

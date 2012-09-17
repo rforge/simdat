@@ -3,4 +3,3 @@ simdat.base provides a package for simulating realistic datasets in R
 simdat.base should be considered in a beta stage and some bugs may remain. 
 Please use simdat.base at your own risk. 
 Report bugs on the project website: http://r-forge.r-project.org/projects/simdat/
-

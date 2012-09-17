@@ -20,8 +20,8 @@ import org.rosuda.REngine.REXPMismatchException;
  */
 public class MetricVariableListEditorModel extends ExDefaultTableModel {
 
-    String rModelName;
-    String guiEnv;
+    String rModelName = "MetricVariableListEditorModelDf";
+    String guiEnv = SimDat.guiEnv;
     //String tempDataName = null;
     private VariableNumberListModel rowNamesModel;
     private final int numExtraColumns = 0;

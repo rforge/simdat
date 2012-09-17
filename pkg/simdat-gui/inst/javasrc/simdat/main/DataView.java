@@ -175,6 +175,8 @@ public class DataView extends SimDatMainTab implements ActionListener {
                     SimDat.eval(inputValue.trim() + "<-new(\"SimDatModel\")");
                     RController.refreshObjects();
                     SimDat.refreshModels();
+                    //SimDatMain.setModel(inputValue);
+                    //SimDatMain.refresh();
                 }
             } else if (cmd == "loadmodel") {
                 LoadModel dld = new LoadModel();
@@ -193,6 +195,8 @@ public class DataView extends SimDatMainTab implements ActionListener {
                     // new model
                     AnovaWizard aov = new AnovaWizard(nw.ModelName(), true);
                     ret = aov.showModalDialog();
+                    SimDat.refreshModels();
+                    SimDat.setRecentModel(nw.ModelName());
                 }
                 if (nw.Outcome() == 1) {
                     // existing model
@@ -206,10 +210,29 @@ public class DataView extends SimDatMainTab implements ActionListener {
                     // new model
                     GlmWizard glm = new GlmWizard(nw.ModelName(), true);
                     ret = glm.showModalDialog();
+                    SimDat.refreshModels();
+                    SimDat.setRecentModel(nw.ModelName());
+                    
+                    //SimDatMain.setModel(nw.ModelName());
                 }
                 if (nw.Outcome() == 1) {
                     // existing model
                     GlmWizard glm = new GlmWizard(nw.ModelName(), false);
+                    ret = glm.showModalDialog();
+                }
+            } else if (cmd == "Regression Wizard") {
+                NewOrExistingModel nw = new NewOrExistingModel();
+                int ret = -10;
+                if (nw.Outcome() == 2) {
+                    // new model
+                    RegressionWizard glm = new RegressionWizard(nw.ModelName(), true);
+                    ret = glm.showModalDialog();
+                    SimDat.refreshModels();
+                    //SimDatMain.setModel(nw.ModelName());
+                }
+                if (nw.Outcome() == 1) {
+                    // existing model
+                    RegressionWizard glm = new RegressionWizard(nw.ModelName(), false);
                     ret = glm.showModalDialog();
                 }
             } else if (cmd == "Repeated Measures Wizard") {
@@ -219,6 +242,8 @@ public class DataView extends SimDatMainTab implements ActionListener {
                     // new model
                     RmAnovaWizard rm = new RmAnovaWizard(nw.ModelName(), true);
                     ret = rm.showModalDialog();
+                    SimDat.refreshModels();
+                    //SimDatMain.setModel(nw.ModelName());
                 } else if (nw.Outcome() == 1) {
                     // existing model
                     RmAnovaWizard rm = new RmAnovaWizard(nw.ModelName(), false);

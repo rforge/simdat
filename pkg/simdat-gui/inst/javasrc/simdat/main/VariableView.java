@@ -278,6 +278,21 @@ public class VariableView extends SimDatMainTab implements ActionListener {
                     GlmWizard glm = new GlmWizard(nw.ModelName(), false);
                     ret = glm.showModalDialog();
                 }
+            } else if (cmd == "Regression Wizard") {
+                NewOrExistingModel nw = new NewOrExistingModel();
+                int ret = -10;
+                if (nw.Outcome() == 2) {
+                    // new model
+                    RegressionWizard glm = new RegressionWizard(nw.ModelName(), true);
+                    ret = glm.showModalDialog();
+                    SimDat.refreshModels();
+                    //SimDatMain.setModel(nw.ModelName());
+                }
+                if (nw.Outcome() == 1) {
+                    // existing model
+                    RegressionWizard glm = new RegressionWizard(nw.ModelName(), false);
+                    ret = glm.showModalDialog();
+                }
             } else if (cmd == "Repeated Measures Wizard") {
                 NewOrExistingModel nw = new NewOrExistingModel();
                 int ret = -10;

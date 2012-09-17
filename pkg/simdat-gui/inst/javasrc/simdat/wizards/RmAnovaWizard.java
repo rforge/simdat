@@ -50,7 +50,7 @@ public class RmAnovaWizard extends Wizard {
         }
         
         if(newModel) {
-            aov0 = new SpecifyNewRMDialog(true,true,true,false,true);
+            aov0 = new SpecifyNewRMDialog(true,true,true,false,true,curEnv);
             aov0d = new RmAnovaWizard.ANOVA0Descriptor();
         } else {
             // make copy of model into current environment
@@ -65,10 +65,22 @@ public class RmAnovaWizard extends Wizard {
         aov2d = new RmAnovaWizard.ANOVA2Descriptor();
 
         this.getDialog().setTitle("Repeated Measures model");
+        
+        if(newModel) {
+            this.registerWizardPanel(ANOVA0Descriptor.IDENTIFIER, aov0d);
+        } else {
+            this.registerWizardPanel(ANOVA1Descriptor.IDENTIFIER, aov1d);
+        }
 
-        this.registerWizardPanel(ANOVA1Descriptor.IDENTIFIER, aov1d);
+        //this.registerWizardPanel(ANOVA1Descriptor.IDENTIFIER, aov1d);
         this.registerWizardPanel(ANOVA2Descriptor.IDENTIFIER, aov2d);
-        this.setCurrentPanel(ANOVA1Descriptor.IDENTIFIER);
+        //this.setCurrentPanel(ANOVA1Descriptor.IDENTIFIER);
+        
+        if(newModel) {
+            this.setCurrentPanel(ANOVA0Descriptor.IDENTIFIER);
+        } else {
+            this.setCurrentPanel(ANOVA1Descriptor.IDENTIFIER);
+        }
     };
 
     @Override
@@ -112,6 +124,9 @@ public class RmAnovaWizard extends Wizard {
         public void aboutToHidePanel() {
 
             aov0.makeFamily();
+            // initialize empty factors to have some data
+            SimDat.eval("bfacList <- makeFactorialDesign(bfacList)",curEnv);
+            SimDat.eval("wfacList <- makeFactorialDesign(wfacList)",curEnv);
             makeRmAnovaWizModel();
             makeGamlssDf();
             //boolean ok = aov1.MakeRdf(this.IDENTIFIER);

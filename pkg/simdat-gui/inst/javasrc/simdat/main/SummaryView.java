@@ -21,6 +21,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 
 import org.rosuda.JGR.RController;
 import org.rosuda.JGR.editor.Editor;
@@ -36,18 +38,23 @@ import org.rosuda.deducer.menu.FactorDialog;
 import org.rosuda.ibase.Common;
 import org.rosuda.ibase.toolkit.EzMenuSwing;
 
-public class ModelView extends SimDatMainTab implements ActionListener {
+public class SummaryView extends SimDatMainTab implements ActionListener {
 
 	protected String modelName;
+        
+        protected JTextArea textArea ;
+        
+        protected JScrollPane summaryScroller; 
 
 	protected ExScrollableTable variableScrollPane;
 	protected ExTable ex;
 	protected JComboBox scomboBox;
         protected JComboBox tcomboBox;
 
-	public ModelView(String modelName){
+	public SummaryView(String modelName){
 		super();
 		init(modelName);
+                
 	}
 	// 0 = name
 	// 1 = scale
@@ -59,98 +66,40 @@ public class ModelView extends SimDatMainTab implements ActionListener {
 	private void init(String modelName){
 		this.modelName = modelName;
 
-                /*
-		// variable scale
-		scomboBox = new JComboBox();
-		scomboBox.addItem("Nominal");
-		scomboBox.addItem("Ordinal");
-		scomboBox.addItem("Interval");
-		scomboBox.addItem("Ratio");
-
-		// variable type
-		tcomboBox = new JComboBox();
-		tcomboBox.addItem("Fixed");
-		tcomboBox.addItem("Random");
-                 *
-                 */
-		RSimDatModelModel modModel = new RSimDatModelModel(modelName);
-		ex = new ExTable();
-		ex.setModel(modModel);
-		//ex.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(scomboBox));
-		//ex.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(tcomboBox));
-		ex.getColumnModel().getColumn(0).setPreferredWidth(50);
-		ex.getColumnModel().getColumn(1).setPreferredWidth(200);
-		ex.getColumnModel().getColumn(2).setPreferredWidth(70);
-		ex.getColumnModel().getColumn(3).setPreferredWidth(50);
-		//ex.getColumnModel().getColumn(4).setPreferredWidth(70);
-		//ex.getColumnModel().getColumn(5).setPreferredWidth(70);
-		//ex.getColumnModel().getColumn(6).setPreferredWidth(70);
-		ex.setColumnSelectionAllowed(true);
-		ex.setRowSelectionAllowed(true);
-		ex.getTableHeader().removeMouseListener(ex.getColumnListener());
-		ex.addMouseListener(new MouseAdapter(){
-		     public void mouseClicked(MouseEvent e){
-		    	 ExTable extab = (ExTable)e.getSource();
-		    	 if(extab.getSelectedColumn()==3){
-		    		int row = extab.getSelectedRow();
-		    		String varName = (String)extab.getModel().getValueAt(row, 0);
-		    		String modName = ModelView.this.modelName;
-		    		REXPLogical tmp;
-					tmp = (REXPLogical) SimDat.eval("is.factor("+modName+"$"+varName+")");
-		    		if(tmp!=null && tmp.isTRUE()[0]){
-		    			FactorDialog fact = new FactorDialog(null,modName+"$"+varName);
-		    			fact.setLocationRelativeTo(ex);
-		    			fact.setTitle("Factor Editor: "+varName);
-		    			fact.setVisible(true);
-		    		}
-		    	 }
-		      }
-		     } );
-
-		variableScrollPane = new ExScrollableTable(ex);
-		variableScrollPane.setRowNamesModel(modModel.new ModelNumberListModel());
-		variableScrollPane.displayContextualMenu(false);
+                this.textArea = new JTextArea();
+                
+                this.summaryScroller = new JScrollPane();
+                
+                this.summaryScroller.setViewportView(this.textArea);
+                this.textArea.setFont(new java.awt.Font("Monospaced", 0, 12));
+                this.textArea.setEditable(false);
+                
 		this.setLayout(new BorderLayout());
-		this.add(variableScrollPane);
+		this.add(textArea);
+                
+                this.setData(this.modelName);
 	}
 
 	public void setData(String model) {
 		modelName = model;
-		RSimDatModelModel varModel = new RSimDatModelModel(modelName);
-		ex.setModel(varModel);
-                //ex.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(scomboBox));
-		//ex.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(tcomboBox));
-		ex.getColumnModel().getColumn(0).setPreferredWidth(50);
-		ex.getColumnModel().getColumn(1).setPreferredWidth(200);
-		ex.getColumnModel().getColumn(2).setPreferredWidth(70);
-		ex.getColumnModel().getColumn(3).setPreferredWidth(50);
-
-		variableScrollPane.setRowNamesModel(varModel.new ModelNumberListModel());
+                
+                String[] txt = {};
+                try {
+                    txt = (SimDat.eval("capture.output(summary(" + this.modelName + "))")).asStrings();
+                }
+                catch (Exception e) {
+			new ErrorMsg(e);
+		}
+                
+                String out = "";
+                for(int i = 0;i < txt.length;i++)
+                    out += txt[i] + "\n";
+                this.textArea.setText(out);
+		
 	}
 
 	public void refresh() {
-		int colStart = -1;
-		int colEnd = -1;
-		int rowStart = -1;
-		int rowEnd=-1;
-		int[] cols = ex.getSelectedColumns();
-		if(cols.length>0){
-			colStart = cols[0];
-			colEnd = cols[cols.length-1];
-		}
-		int[] rows = ex.getSelectedRows();
-		if(rows.length>0){
-			rowStart = rows[0];
-			rowEnd = rows[rows.length-1];
-		}
-		((RSimDatModelModel)variableScrollPane.getExTable().getModel()).refresh();
-		variableScrollPane.getRowNamesModel().refresh();
-		variableScrollPane.autoAdjustRowWidth();
-
-		if(colStart != -1 && colEnd != -1 && rowStart != -1 && rowEnd != -1){
-			ex.changeSelection(rowStart, colStart, false, false);
-			ex.changeSelection(rowEnd, colEnd, false, true);
-		}
+            this.setData(this.modelName);
 	}
 
 	public JMenuBar generateMenuBar() {
