@@ -392,13 +392,13 @@ setMethod("simulateFromModel",signature(object="RandomVariable",model="MvnormMod
     }
 )
 
-#setClass("UniformModel",
-#    contains = "Model"
-#)
+setClass("UniformModel",
+    contains = "GamlssModel"
+)
 
 UniformModel <- function() {
   fam <- UN()
-  new("GamlssModel",
+  new("UniformModel",
     family=fam)
 }
 
@@ -453,44 +453,44 @@ setClass("GamlssModel",
     )
 )
 
-setMethod("simulateFromModel",signature(object="RandomVariable",model="NormalModel"),
-    function(object,model,nsim=1,seed,...) {
-        n <- length(object)
-        family <- NO()
-        args <- list(n=n,mu=model@mean,sigma=model@sd)
-        if(isMetric(object)) {
-            min <- min(object)
-            max <- max(object)
-            w <- which(abs(c(min,max)) < Inf)
-            if(length(w) > 0) {
-                # have to truncate
-                if(length(w) == 2) {
-                    type <- "both"
-                    range <- c(min,max)
-                } else {
-                    if(w == 1) {
-                        type <- "left"
-                        range <- min
-                    } else {
-                        type <- "right"
-                        range <- max
-                    }
-                }
-                rfun <- trun.r(range,family=family$family[1],type=type)
-                out <- do.call(rfun,args=args)
-            } else {
-                # no truncation
-                out <- do.call(paste("r",family$family[1],sep=""),args=args)
-            }
-            #out <- rnorm(n,mean=model@mean,sd=model@sd)
-            if(length(object@digits) > 0) out <- round(out,digits=object@digits)
-            object@.Data <- out
-        } else {
-            stop("Cannot simulate a non-metric Variable from a NormalModel")
-        }
-        return(object)
-    }
-)
+#setMethod("simulateFromModel",signature(object="RandomVariable",model="NormalModel"),
+#    function(object,model,nsim=1,seed,...) {
+#        n <- length(object)
+#        family <- NO()
+#        args <- list(n=n,mu=model@mean,sigma=model@sd)
+#        if(isMetric(object)) {
+#            min <- min(object)
+#            max <- max(object)
+#            w <- which(abs(c(min,max)) < Inf)
+#            if(length(w) > 0) {
+#                # have to truncate
+#                if(length(w) == 2) {
+#                    type <- "both"
+#                    range <- c(min,max)
+#                } else {
+#                    if(w == 1) {
+#                        type <- "left"
+#                        range <- min
+#                    } else {
+#                        type <- "right"
+#                        range <- max
+#                    }
+#                }
+#                rfun <- trun.r(range,family=family$family[1],type=type)
+#                out <- do.call(rfun,args=args)
+#            } else {
+#                # no truncation
+#                out <- do.call(paste("r",family$family[1],sep=""),args=args)
+#            }
+#            #out <- rnorm(n,mean=model@mean,sd=model@sd)
+#            if(length(object@digits) > 0) out <- round(out,digits=object@digits)
+#            object@.Data <- out
+#        } else {
+#            stop("Cannot simulate a non-metric Variable from a NormalModel")
+#        }
+#        return(object)
+#    }
+#)
 
 setClass("ModelList",
   contains="list"
@@ -533,28 +533,28 @@ setMethod("sd",signature(x="GamlssModel"),
   }
 )
 
-setMethod("mean",signature(x="NormalModel"),
-  function(x,...) {
-    return(x@mean)
-  }
-)
+#setMethod("mean",signature(x="NormalModel"),
+#  function(x,...) {
+#    return(x@mean)
+#  }
+#)
 
-setMethod("mean",signature(x="UniformModel"),
-  function(x,DV,...) {
-    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
-    return(mean(c(min(DV),max(DV))))
-  }
-)
+#setMethod("mean",signature(x="UniformModel"),
+#  function(x,DV,...) {
+#    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
+#    return(mean(c(min(DV),max(DV))))
+#  }
+#)
 
-setMethod("sd",signature(x="UniformModel"),
-  function(x,DV,...) {
-    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
-    return(sqrt((1/12)*(max(DV)-min(DV))^2))
-  }
-)
+#setMethod("sd",signature(x="UniformModel"),
+#  function(x,DV,...) {
+#    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
+#    return(sqrt((1/12)*(max(DV)-min(DV))^2))
+#  }
+#)
 
-setMethod("sd",signature(x="NormalModel"),
-  function(x,...) {
-    return(x@sd)
-  }
-)
+#setMethod("sd",signature(x="NormalModel"),
+#  function(x,...) {
+#    return(x@sd)
+#  }
+#)

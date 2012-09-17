@@ -6,7 +6,7 @@ export(
   GLM,
   Regression,
   UniformModel,
-  NormalModel,
+  #NormalModel,
   NominalVariable,
   RandomNominalVariable,
   OrdinalVariable,
@@ -38,7 +38,7 @@ exportClasses(
   RandomParModel,
   MixedParModel,
   GamlssModel,
-  NormalModel,
+  #NormalModel,
   UniformModel,
   SimDatModel,
   ANOVA,
@@ -64,5 +64,6 @@ exportMethods(
 	models,
 	"models<-",
 	variables,
-	"variables<-"
+	"variables<-",
+	summary
 )

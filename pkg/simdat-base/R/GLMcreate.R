@@ -196,6 +196,7 @@ GLM_create <- function(factors=NULL,covariates=NULL,covariateModels=NULL,N=NULL,
     }
     mFormula <- as.formula(paste(names(DVs),"~",mFterms))
     dat <- getData(VariableList(c(fixed,random)))
+    
     # need to get the means of the covariates
     tmu <- rep(mu,N)
     if(ncovariate > 0) {
