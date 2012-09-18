@@ -1,7 +1,30 @@
 setClass("ANOVA",
   contains="GLM")
 
-ANOVA <- function(design=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,3),labels=c("B1","B2","B3"))),N=c(15,15,15,15),mu=c(0,10,20,30),sigma=c(2,2,2,5),nu=NULL,tau=NULL,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO()) {
+ANOVA <- function(DV,family=NO(),design,N,mu,sigma,nu,tau) {
+  if(missing(design)) stop("please supply a design")
+  if(missing(N)) stop("please supply N")
+  npar <- family$nopar
+  if(npar > 0) {
+    if(missing(mu)) stop("please supply mu")
+  } else {
+    mu <- NULL
+  }
+  if(npar > 1) {
+    if(missing(sigma)) stop("please supply sigma")
+  } else {
+    sigma <- NULL
+  }
+  if(npar > 2) {
+    if(missing(nu)) stop("please supply nu")
+  } else {
+    nu <- NULL
+  }
+  if(npar > 3) {
+    if(missing(tau)) stop("please supply tau")
+  } else {
+    tau <- NULL
+  }
   tmp <- GLM_create(factors=design,N=N,mu=mu,sigma=sigma,nu=nu,tau=tau,beta=NULL,DV=DV,family=family)
   return(as(tmp,"ANOVA"))
 }

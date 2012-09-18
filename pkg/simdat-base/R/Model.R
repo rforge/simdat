@@ -539,19 +539,19 @@ setMethod("sd",signature(x="GamlssModel"),
 #  }
 #)
 
-#setMethod("mean",signature(x="UniformModel"),
-#  function(x,DV,...) {
-#    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
-#    return(mean(c(min(DV),max(DV))))
-#  }
-#)
+setMethod("mean",signature(x="UniformModel"),
+  function(x,DV,...) {
+    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
+    return(mean(c(min(DV),max(DV))))
+  }
+)
 
-#setMethod("sd",signature(x="UniformModel"),
-#  function(x,DV,...) {
-#    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
-#    return(sqrt((1/12)*(max(DV)-min(DV))^2))
-#  }
-#)
+setMethod("sd",signature(x="UniformModel"),
+  function(x,DV,...) {
+    if(!is(DV,"RandomVariable") || !isMetric(DV)) stop("cannot compute the mean of a non-random and/or non metric Variable")
+    return(sqrt((1/12)*(max(DV)-min(DV))^2))
+  }
+)
 
 #setMethod("sd",signature(x="NormalModel"),
 #  function(x,...) {

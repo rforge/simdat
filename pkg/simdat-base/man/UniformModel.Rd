@@ -2,6 +2,9 @@
 \Rdversion{1.1}
 \alias{UniformModel}
 \alias{UniformModel-class}
+\alias{sd,UniformModel-method}
+\alias{mean,UniformModel-method}
+\alias{UN}
 
 \title{Uniform model}
 

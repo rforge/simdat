@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \alias{Regression}
 \alias{Regression-class}
+\alias{summary,Regression-method}
 
 \title{Regression}
 
@@ -10,10 +11,12 @@ Constructs a linear Regression model.
 }
 
 \usage{
-Regression(predictors=VariableList(list(RandomIntervalVariable(numeric(sum(N)),digits=8,min=-Inf,max=Inf,name="X"))),predictorModels=ModelList(list(NormalModel(mean=0,sd=1))),N=10,mu=0,sigma=1,nu=NULL,tau=NULL,beta=1,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO())
+Regression(DV, family,predictors,predictorModels,N,mu,sigma,nu,tau,beta)
 }
 
 \arguments{
+\item{DV}{either a \code{list} or a \linkS4class{RandomVariable}}.
+\item{family}{a \code{gamlss.family} object}
 \item{predictors}{either a \code{data.frame} or \linkS4class{VariableList} containing the predictors in the design.}
 \item{predictorModels}{(optional) a list with models to simulate random predictors.}
 \item{N}{a vector with the number of observations in each cell of the design.}
@@ -22,16 +25,14 @@ Regression(predictors=VariableList(list(RandomIntervalVariable(numeric(sum(N)),d
 \item{nu}{a vector with the values of nu in each cell of the design.}
 \item{tau}{a vector with the values of tau in each cell of the design.}
 \item{beta}{a vector or matrix with the slopes of the covariates in each cell of the design.}
-\item{DV}{either a \code{list} or a \linkS4class{GamlssModel}}.
-\item{family}{a \code{gamlss.family} object}
 }
-\details{The Regression function constructs a Regression model. The workhorse function is \code{GLM_create}, which should not be called directly.}
+\details{The Regression function constructs a (multiple) regression model. The workhorse function is \code{GLM_create}, which should not be called directly.}
 
-\value{An object of class \code{Regression} (directly extending the \linkS4class{SimDatModel} class).}
+\value{An object of class \code{Regression} (directly extending the \linkS4class{GLM} class).}
 
 \author{Maarten Speekenbrink}
 \examples{
-mod <- Regression()
+mod <- Regression(predictors=VariableList(list(RandomIntervalVariable(numeric(10),digits=8,min=-Inf,max=Inf,name="X"))),predictorModels=ModelList(list(NormalModel(mean=0,sd=1))),N=10,mu=0,sigma=1,nu=NULL,tau=NULL,beta=1,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO())
 mod <- simulate(mod)
 
 # and a random interval covariate

@@ -36,7 +36,7 @@ setMethod("getData",
     }
 )
 
-rmANOVA <- function(between=data.frame(A=factor(c(1,1,2,2),labels=c("A1","A2")),B=factor(c(1,2,1,2),labels=c("B1","B2"))),within=data.frame(V=factor(c(1,1,2,2),labels=c("V1","V2")),W=factor(c(1,2,1,2),labels=c("W1","W2"))),N=rep(10,4),mu=cbind(c(0,1,2,3),c(1,2,3,4),c(3,4,5,6),c(6,7,8,9)),bsigma=c(1,1,1,1),wsigma=c(1,1,1,1),nu=NULL,tau=NULL,DV=list(name="Y",min=-Inf,max=Inf,digits=8),family=NO(),id.name="ID",display.direction=c("wide","long")) {
+rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.name="ID",display.direction=c("wide","long")) {
 
     display.direction <- match.arg(display.direction)
 
