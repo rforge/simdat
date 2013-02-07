@@ -1,8 +1,23 @@
 # Test Anova wizard
 source("~/Documents/RForge/simdat/sourcing.R")
 
+# create two factors and put them into a variablelist
+f1 <- NominalVariable(factor(c(1,1,2,2),labels=c("A1","A2")),name="A")
+f2 <- NominalVariable(factor(c(1,2,2,3),labels=c("B1","B2","B3")),name="B")
+facs <- VariableList(list(f1,f2))
+# and a random interval covariate
+x <- VariableList(list(RandomIntervalVariable(numeric(1),name="X",min=-5,max=5,digits=2)))
+# and a random interval dependent variable
+d <- RandomIntervalVariable(numeric(1),name="Y",min=-10,max=Inf,digits=2)
+mod2 <- GLM(factors=facs,covariates=x,
+  covariateModels=ModelList(list(UniformModel())),
+  N=c(20,20,20,20),mu=c(2,5,2,10),sigma=c(2,2,2,2),beta=c(1,2,1,2),
+  DV=d,family=NO())
+mod2 <- simulate(mod2)
+
 tmp <- ANOVA()
 tmp2 <- GLM()
+tmp3 <- rmANOVA()
 
 facList <- variables(tmp,c("A","B"))
 numList <- VariableList(list(variables(tmp2,"X")))
