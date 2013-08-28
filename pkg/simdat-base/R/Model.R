@@ -56,9 +56,13 @@ setMethod("simulate",signature(object="RandomParModel"),
     ns <- dim(object@sigma)[3]
     nc <- dim(object@sigma)[1]
     if(!is.matrix(object@coefficients)) {
-      if(length(object@coefficients == nc)) {
+      if(length(object@coefficients) == nc) {
         ng <- 1
-        coeff <- as.numeric(rmvnorm(ng,mean=rep(0,nc),sigma=object@sigma[,,1]))
+        if(nc == 1) {
+          coeff <- rnorm(ng,mean=0,sd=as.numeric(sqrt(object@sigma[,,1])))
+        } else {
+          coeff <- as.numeric(rmvnorm(ng,mean=rep(0,nc),sigma=object@sigma[,,1]))
+        }
       } else {
         if(nc == 1) {
           ng <- length(object@coefficients)
@@ -282,6 +286,8 @@ setMethod("simulateFromModel",signature(object="RandomVariable",model="MixedParM
 # TODO: for consistency, should really simulate a DV, with a model as argument
 setMethod("simulateFromModel",signature(object="RandomVariable",model="GamlssModel"),
     function(object,model,nsim=1,seed,...,data) {
+        #if(isRandom(model)) 
+        model <- simulate(model,...)
         npar <- model@family$nopar
         args <- list()
         if(!missing(data)) {
@@ -338,11 +344,18 @@ setClass("GammlssModel",
     contains="GamlssModel"#,
 )
 
+setMethod("simulate",signature(object="GamlssModel"),
+  function(object,nsim=1,seed,...) {
+    return(object)  
+  }
+)
+
 setMethod("simulate",signature(object="GammlssModel"),
   function(object,nsim=1,seed,...) {
     # simulate random coefficients
     call <- match.call()
     args <- as.list(call[2:length(call)])
+    args[["object"]] <- NULL
     #targs <- args
     #targs[["object"]] <- NULL
     if(isRandom(object@mu)) object@mu <- do.call("simulate",args=c(object=object@mu,args))

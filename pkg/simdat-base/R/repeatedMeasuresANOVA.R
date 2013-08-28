@@ -39,7 +39,12 @@ setMethod("getData",
 rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.name="ID",display.direction=c("wide","long")) {
 
     display.direction <- match.arg(display.direction)
-
+    pureWithin <- FALSE
+    
+    if(missing(between)) {
+      pureWithin <- TRUE
+      between <- data.frame(all=factor(1,labels="all"))
+    }
     if(is.data.frame(between)) {
         if(!all(unlist(lapply(between,is.factor)))) stop("between should be a data.frame with factors")
         tbetween <- between
@@ -93,12 +98,12 @@ rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.n
 
     nCellsB <- NROW(tbetween)
     nCellsW <- NROW(twithin)
+    if(!pureWithin) nBetween <- NCOL(tbetween) else nBetween <- 0
     nWithin <- NCOL(twithin)
-    nBetween <- NCOL(twithin)
-    nCellsT <- NROW(tbetween)*NROW(twithin)
+    nCellsT <- nCellsB*nCellsW
     
     if(!is.matrix(mu)) mu <- as.matrix(mu) 
-    if(ncol(mu) != NROW(twithin) || nrow(mu) != NROW(tbetween)) {
+    if(ncol(mu) != nCellsW || nrow(mu) != nCellsB) {
       if(length(mu)!=1) warning("mu does not have correct size")
       mu <- matrix(rep(mu,length=nCellsT),ncol=nCellsW,nrow=nCellsB)
     }
@@ -125,37 +130,45 @@ rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.n
     }
     
     nIV <- nBetween + nWithin
-    tbetween <- data.frame(lapply(tbetween,rep,times=N))
-    designMatrix <- cbind(as.data.frame(lapply(tbetween,rep,each=max(nCellsW,1))),twithin)
+    if(nIV == nWithin) {
+      #completely within
+      designMatrix <- as.data.frame(lapply(twithin,rep,N))
+      factor.names <- colnames(twithin)
+    } else {
+      tbetween <- data.frame(lapply(tbetween,rep,times=N))
+      designMatrix <- cbind(as.data.frame(lapply(tbetween,rep,each=max(nCellsW,1))),twithin)
+      factor.names <- c(colnames(tbetween),colnames(twithin))
+    }
+    
     #designMatrix <- between
     #designMatrix <- data.frame(lapply(designMatrix,rep,times=N))
-    factor.names <- c(colnames(tbetween),colnames(twithin))
+    #factor.names <- c(colnames(tbetween),colnames(twithin))
     
     IDvar <- new("NominalVariable",
         factor(rep(1:sum(N),each=nCellsW)),
         name = id.name
     )
     
-        
-    if(is.data.frame(between)) {
-      bIVs <- vector("list",length=nBetween)
-      if(nBetween > 0) {
-        for(i in 1:nBetween) {
-            bIVs[[i]] <- new("NominalVariable",
-              designMatrix[,i],
-              name = colnames(designMatrix)[i]
-            )
+    if(nBetween > 0) {
+      if(is.data.frame(between)) {
+        bIVs <- vector("list",length=nBetween)
+        if(nBetween > 0) {
+          for(i in 1:nBetween) {
+              bIVs[[i]] <- new("NominalVariable",
+                designMatrix[,i],
+                name = colnames(designMatrix)[i]
+              )
+          }
         }
-      }
-    } else {
-      bIVs <- between
-      if(nBetween > 0) {
-        for(i in 1:nBetween) {
-            bIVs[[i]]@.Data <- designMatrix[,i]
+      } else {
+        bIVs <- between
+        if(nBetween > 0) {
+          for(i in 1:nBetween) {
+              bIVs[[i]]@.Data <- designMatrix[,i]
+          }
         }
-      }
+     }
    }
-   
    if(is.data.frame(within)) {
       wIVs <- vector("list",length=nWithin)
       if(nWithin > 0) {
@@ -175,7 +188,7 @@ rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.n
       }
    }
         
-   IVs <- VariableList(c(list(IDvar),bIVs,wIVs))
+   if(nBetween > 0) IVs <- VariableList(c(list(IDvar),bIVs,wIVs)) else IVs <- VariableList(c(list(IDvar),wIVs))
 
     
     if(!is(DV,"Variable")) {
@@ -231,7 +244,7 @@ rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.n
       #dat[,] <- 
       smod <- lm(sFormula,data=dat)
       scoeff <- coefficients(smod)
-      sFormula[[2]] <- NULL
+      #sFormula[[2]] <- NULL
           
     }
     
@@ -242,6 +255,7 @@ rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.n
       colnames(dat) <- c(names(IVs),names(DVs))
       nmod <- lm(nFormula,data=dat)
       ncoeff <- coefficients(nmod)
+      #nFormula[[2]] <- NULL
     }
     
     if(npar > 3) {
@@ -251,6 +265,7 @@ rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.n
       colnames(dat) <- c(names(IVs),names(DVs))
       tmod <- lm(tFormula,data=dat)
       tcoeff <- coefficients(tmod)
+      #tFormula[[2]] <- NULL
     }
     # now make the DV model
     mod <- new("GammlssModel",
@@ -279,7 +294,9 @@ rmANOVA <- function(DV,family=NO(),between,within,N,mu,bsigma,wsigma,nu,tau,id.n
         formula=tFormula,
         coefficients=tcoeff)
     }
-      
+    
+    #dat <- getData(IVs)
+    #dat <- cbind(dat,)
     DVs <- simulateFromModel(object=DVs,model=mod,data=dat)
     
     structure <- matrix(0,ncol=(length(IVs) + 1),nrow=(length(IVs) + 1))
@@ -325,7 +342,11 @@ setMethod("summary",signature(object="rmANOVA"),
                 # need a special summary here
                 bfacs <- variableNames(fixed)
                 bfacs <- bfacs[!(bfacs %in% object@wvars)]
-                form <- as.formula(paste("cbind(",paste(object@DVwide,collapse=","),") ~ ",paste(bfacs,collapse="*")))
+                if(length(bfacs) > 0) {
+                  form <- as.formula(paste("cbind(",paste(object@DVwide,collapse=","),") ~ ",paste(bfacs,collapse="*")))
+                } else {
+                  form <- as.formula(paste("cbind(",paste(object@DVwide,collapse=","),") ~ 1"))
+                }
                 iform <- as.formula(paste("~",paste(object@wvars,collapse="*")))
                 mod <- lm(form,data=getData(object))
                 summary(Anova(mod, idata=object@wdesign, idesign=iform,type=SStype),multivariate=FALSE,singular.ok=TRUE) # already prints
