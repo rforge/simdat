@@ -1,0 +1,27 @@
+<h2>Repeated-measures ANOVA model</h2>
+<p>With this application, you can simulate data from a mixed factorial design with both between- and within-subjects factors, or a fully within-subjects design.</p>
+<h3>Specifying the design</h3>
+<p>You can specify the design in the panel on the left. At the top, you can specify characteristics for the dependent variable: whether it has a minimum or a 
+maximum value (and if so, what these are), and the measurement precision (the number of decimal places, between 0 and 8). Below, you can specify the number of 
+between-subjects factors, and for each factor the number of levels. Between subjects-factors are labelled bA, bB, bC, etc, while there levels are labelled as bA1, bA2, ..., bB1, etc. 
+Finally, you can specify the number of within-subjects factors, and the number of levels for each. Within-subjects factors are labelled as wA, wB, etc., 
+while their levels are labelled wA1, wA2, etc.</p>
+<h3>Specifying model parameters: means and standard deviations.</h3>
+After specifying the design, you can specify characteristics of the data in the first panel on the right-hand side, labelled "parameters". 
+In the section "Means and between-subjects parameters", you can, for each between-subjects cell, 
+specify the number of observations (N), as well as the between-subjects standard deviation (sd). For each combination of between- and within-subjects cell, you can
+also specify the mean. In the section "Within-subjects parameters", you can, for each within-subjects cell, specify the within-subjects standard deviation (error sd).</p>
+<p>The specified means and standard deviations affect the data in the following way. The between-subjects standard deviation determines the standard-deviation of the 
+individual (subject-specific) means in a between-subjects cell. The within-subjects standard deviation (error sd), on the other hand, determines the standard deviation 
+of the scores around the individual means in each within-subjects cell.</p>
+<h4>Example</h4>
+Suppose we have a 2 level within subjects design, with means of 3 and 4 respectively. The between-subjects standard deviation is 2, while the within-subjects standard 
+deviations are 0.5 and 1 respectively. The data are simulated as follows. For each subject, and individual effect is drawn from N(0,2), a Normal distribution with a mean of 0 and
+a standard deviation of 2 (the between-subjects sd). Suppose for a particular participant, this random individual effect is -1. For that participant, the means in the 
+two within-cells now become 3-1 = 2 and 4-1 = 3 respectively. The actual scores in the two within cells are now simulated by drawing from two Normal distributions, a N(2,0.5) 
+distribution for the first cell, and a N(3,1) for the second cell.</p>
+<h3>Viewing and downloading data</h3>
+You can view the simulated data set in the panel on the right labelled "Data". Note that whenever you make a change to any of the parameters, a new dataset is automatically 
+simulated. You can download the current simulated dataset by clicking on the "download" button. This will allow you to download the data in a comma-separated value file. 
+<h3>Summary</h3>
+A summary of the data (means, standard deviations, and ANOVA results) is provided in the panel on the right labelled "Summary".

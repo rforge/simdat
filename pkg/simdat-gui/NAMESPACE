@@ -1,18 +1,6 @@
 import(methods)
-import(rJava)
-import(JGR)
+import(shiny)
 
-exportPattern("[[:alpha:]]+")
-
-#export(
-#  simdat,
-#  simdat.viewer
-#)
-
-#exportClasses(
-#	
-#)
-
-#exportMethods(
-#	summary
-#)
+export(
+  runGUI
+)

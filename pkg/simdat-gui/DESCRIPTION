@@ -1,13 +1,12 @@
 Package: simdat.gui
-Version: 0.0-3
-Date: 2012-05-22
-Title: GUI for simdat.base data simulation package
+Version: 0.1-0
+Date: 2013-09-18
+Title: Shiny GUIs for the simdat.base data simulation package
 Author: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
 Maintainer: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
-Depends: R (>= 2.12.0), methods, simdat.base, JavaGD, rJava (>= 0.8-4), JGR (>= 1.7-4), Deducer
-SystemRequirements: Java (>= 1.4), JRI
+Depends: R (>= 2.12.0), methods, simdat.base, shiny (>= 0.7.0)
 Description: simdat offers a flexible (S4) framework to simulate realistic data 
-  from various designs and dsitributions. The resulting data sets can be used
-  for purposes of e.g. in statistics teaching.
+  from various designs and distributions. The resulting data sets can be used
+  for purposes of e.g. statistics teaching.
 License: GPL (>=2)
 URL: http://www.ucl.ac.uk/simdat/
