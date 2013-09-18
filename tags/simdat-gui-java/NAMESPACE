@@ -1,0 +1,18 @@
+import(methods)
+import(rJava)
+import(JGR)
+
+exportPattern("[[:alpha:]]+")
+
+#export(
+#  simdat,
+#  simdat.viewer
+#)
+
+#exportClasses(
+#	
+#)
+
+#exportMethods(
+#	summary
+#)
