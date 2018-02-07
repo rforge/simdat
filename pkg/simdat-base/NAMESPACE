@@ -1,4 +1,12 @@
 import(methods)
+import(gamlss.dist)
+import(gamlss.tr)
+importFrom("mvtnorm","rmvnorm")
+importFrom("tmvtnorm","rtmvnorm")
+import(car)
+importFrom("stats", "aggregate", "aov", "as.formula", "coefficients",
+             "glm", "lm", "model.matrix", "reshape", "rnorm", "runif",
+             "terms", "var")
 
 export(
   ANOVA,

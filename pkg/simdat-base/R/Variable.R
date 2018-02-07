@@ -21,11 +21,15 @@ RandomNominalVariable <- function(data=factor(),name) {
   return(new("RandomNominalVariable",data,name=name)) 
 }
 
+
+setOldClass("ordered")
+
 setClass("OrdinalVariable",
   contains="ordered",
   representation(
     name="character"
-  )
+  ),
+  prototype = list(ordered(1),name="")
 )
 
 setClass("RandomOrdinalVariable",
